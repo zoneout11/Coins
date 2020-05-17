@@ -7,6 +7,8 @@ import me.justeli.coins.cancel.CancelHopper;
 import me.justeli.coins.cancel.CancelInventories;
 import me.justeli.coins.cancel.CoinPlace;
 import me.justeli.coins.cancel.PreventSpawner;
+import me.justeli.coins.economy.CoinStorage;
+import me.justeli.coins.economy.CoinsEffect;
 import me.justeli.coins.events.CoinsPickup;
 import me.justeli.coins.events.DropCoin;
 import me.justeli.coins.item.CoinParticles;
@@ -69,6 +71,14 @@ public class Coins
     {
         main = this;
         Locale.setDefault(Locale.US);
+
+        //Methods.setVersion(this.getDescription().getVersion());
+        //Methods.setMethod(this.getServer().getPluginManager());
+
+        if (Settings.hB.get(Config.BOOLEAN.coinsEconomy))
+        {
+            CoinStorage.initPlayerData();
+        }
 
         registerConfig();
         registerEvents();
@@ -177,6 +187,7 @@ public class Coins
         manager.registerEvents(new DropCoin(), this);
         manager.registerEvents(new CoinPlace(), this);
         manager.registerEvents(new CancelInventories(), this);
+        manager.registerEvents(new CoinsEffect(), this);
     }
 
     private void registerCommands ()

@@ -26,7 +26,10 @@ public enum Config
         dropOnDeath,
         onlyExperienceBlocks,
         disableHoppers,
-        dropWithAnyDeath
+        dropWithAnyDeath,
+        coinsEconomy,
+        coinsEffect,
+        trackEconomy,
     }
 
     public enum STRING
@@ -56,6 +59,8 @@ public enum Config
         pickupVolume,
         limitForLocation,
         percentagePlayerHit,
+        startingBalance,
+        maximumAllowed,
     }
 
     public enum ARRAY
