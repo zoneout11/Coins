@@ -19,13 +19,13 @@ public class PreventSpawner
     @EventHandler
     public void preventSpawnerCoin (CreatureSpawnEvent e)
     {
-        for (String world : Settings.hA.get(Config.ARRAY.disabledWorlds))
+        for (String world : Settings.get(Config.ARRAY.disabledWorlds))
             if (e.getEntity().getWorld().getName().equalsIgnoreCase(world))
                 return;
 
         if (e.getSpawnReason().equals(SpawnReason.SPAWNER) || e.getEntityType().equals(EntityType.CAVE_SPIDER))
         {
-            if (!Settings.hB.get(Config.BOOLEAN.spawnerDrop))
+            if (!Settings.get(Config.BOOLEAN.spawnerDrop))
                 prevent.put(e.getEntity().getUniqueId().toString() + ".spawner", true);
         }
     }
@@ -34,7 +34,7 @@ public class PreventSpawner
     public void splitPrevent (CreatureSpawnEvent e)
     {
         if (e.getSpawnReason().equals(SpawnReason.SLIME_SPLIT))
-            if (Settings.hB.get(Config.BOOLEAN.preventSplits))
+            if (Settings.get(Config.BOOLEAN.preventSplits))
                 prevent.put(e.getEntity().getUniqueId().toString() + ".slime", true);
     }
 

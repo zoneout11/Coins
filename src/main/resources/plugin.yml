@@ -3,9 +3,12 @@ name: "${project.name}"
 version: "${project.version}"
 author: JustEli
 website: "https://www.spigotmc.org/resources/coins.33382/"
-softdepend: [Vault, WorldGuard, mcMMO]
+softdepend: [Vault]
 api-version: "1.13"
 commands:
   coins:
     aliases: [coin]
+    usage: "/coins <parameters>"
   withdraw:
+    usage: "/withdraw <coins>"
+load: STARTUP

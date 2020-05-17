@@ -1,6 +1,7 @@
 package me.justeli.coins.settings;
 
 import me.justeli.coins.Coins;
+import me.justeli.coins.economy.CoinStorage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -27,10 +28,39 @@ import java.util.Set;
 
 public class Settings
 {
-    public final static HashMap<Config.BOOLEAN, Boolean> hB = new HashMap<>();
-    public final static HashMap<Config.STRING, String> hS = new HashMap<>();
-    public final static HashMap<Config.DOUBLE, Double> hD = new HashMap<>();
-    public final static HashMap<Config.ARRAY, List<String>> hA = new HashMap<>();
+    private final static HashMap<Config.BOOLEAN, Boolean> hB = new HashMap<>();
+    private final static HashMap<Config.STRING, String> hS = new HashMap<>();
+    private final static HashMap<Config.DOUBLE, Double> hD = new HashMap<>();
+    private final static HashMap<Config.ARRAY, List<String>> hA = new HashMap<>();
+
+    public static List<String> get (Config.ARRAY key)
+    {
+        return hA.get(key);
+    }
+
+    public static Boolean get (Config.BOOLEAN key)
+    {
+        return hB.get(key);
+    }
+
+    public static Double get (Config.DOUBLE key)
+    {
+        return hD.get(key);
+    }
+
+    public static String get (Config.STRING key)
+    {
+        return hS.get(key);
+    }
+
+    public static void setCoinsEconomy (boolean value)
+    {
+        hB.put(Config.BOOLEAN.coinsEconomy, value);
+        FileConfiguration config = getFile();
+        config.set("coinsEconomy", value);
+        CoinStorage.saveFile(config, new File(Coins.getInstance().getDataFolder() + File.separator + "config.yml"));
+        //todo make it not reset the config owo
+    }
 
     final static HashMap<Messages, String> language = new HashMap<>();
     public final static HashMap<EntityType, Integer> multiplier = new HashMap<>();

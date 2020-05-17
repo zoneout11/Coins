@@ -1,6 +1,6 @@
 package me.justeli.coins.economy;
 
-import org.bukkit.entity.Player;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
@@ -15,33 +15,40 @@ public class BalanceChangeEvent
 {
     private static final HandlerList handlers = new HandlerList();
 
-    private final Player player;
-    private final double newAmount;
+    private final OfflinePlayer player;
+    private final double newBalance;
     private boolean cancelled;
-    private final double previousAmount;
+    private final double previousBalance;
+    private final double transactionAmount;
 
-    public BalanceChangeEvent (Player eventPlayer, double newAmount, double previousAmount)
+    public BalanceChangeEvent (OfflinePlayer eventPlayer, double newBalance, double previousBalance, double transactionAmount)
     {
         this.player = eventPlayer;
-        this.newAmount = newAmount;
-        this.previousAmount = previousAmount;
+        this.newBalance = newBalance;
+        this.previousBalance = previousBalance;
+        this.transactionAmount = transactionAmount;
     }
 
     // ¢ //
 
-    public Player getPlayer ()
+    public OfflinePlayer getPlayer ()
     {
         return player;
     }
 
-    public double getNewAmount ()
+    public double getNewBalance ()
     {
-        return newAmount;
+        return newBalance;
     }
 
-    public double getPreviousAmount ()
+    public double getPreviousBalance ()
     {
-        return previousAmount;
+        return previousBalance;
+    }
+
+    public double getTransactionAmount ()
+    {
+        return transactionAmount;
     }
 
     public HandlerList getHandlers ()

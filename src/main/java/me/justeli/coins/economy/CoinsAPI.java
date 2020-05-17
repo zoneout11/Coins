@@ -6,4 +6,6 @@ package me.justeli.coins.economy;
  */
 public class CoinsAPI
 {
+    // setBalance
+    // getOfflineReceived
 }

@@ -29,7 +29,7 @@ public class CancelInventories
             if (stack != null && stack.getItemMeta() != null && stack.getItemMeta().hasDisplayName())
             {
                 if (stack.getItemMeta().getDisplayName()
-                        .contains(ChatColor.translateAlternateColorCodes('&', Settings.hS.get(Config.STRING.nameOfCoin))))
+                        .contains(ChatColor.translateAlternateColorCodes('&', Settings.get(Config.STRING.nameOfCoin))))
                 {
                     e.setCancelled(true);
                 }
@@ -40,7 +40,7 @@ public class CancelInventories
     @EventHandler (ignoreCancelled = true)
     public void coinInventory (InventoryClickEvent e)
     {
-        for (String world : Settings.hA.get(Config.ARRAY.disabledWorlds))
+        for (String world : Settings.get(Config.ARRAY.disabledWorlds))
             if (e.getWhoClicked().getWorld().getName().equalsIgnoreCase(world))
                 return;
 
@@ -50,7 +50,7 @@ public class CancelInventories
             if (item != null && item.hasItemMeta() && item.getItemMeta() != null && item.getItemMeta().hasDisplayName())
             {
                 String name = item.getItemMeta().getDisplayName();
-                String configName = ChatColor.translateAlternateColorCodes('&', Settings.hS.get(Config.STRING.nameOfCoin));
+                String configName = ChatColor.translateAlternateColorCodes('&', Settings.get(Config.STRING.nameOfCoin));
                 if (name.equals(configName))
                 {
                     Player p = (Player) e.getWhoClicked();
@@ -67,7 +67,7 @@ public class CancelInventories
     @EventHandler (ignoreCancelled = true)
     public void onMiddleClick (InventoryClickEvent e)
     {
-        for (String world : Settings.hA.get(Config.ARRAY.disabledWorlds))
+        for (String world : Settings.get(Config.ARRAY.disabledWorlds))
             if (e.getWhoClicked().getWorld().getName().equalsIgnoreCase(world))
                 return;
 
@@ -79,7 +79,7 @@ public class CancelInventories
     @EventHandler (ignoreCancelled = true)
     public void onMiddleClick2 (InventoryCreativeEvent e)
     {
-        for (String world : Settings.hA.get(Config.ARRAY.disabledWorlds))
+        for (String world : Settings.get(Config.ARRAY.disabledWorlds))
             if (e.getWhoClicked().getWorld().getName().equalsIgnoreCase(world))
                 return;
 
@@ -94,7 +94,7 @@ public class CancelInventories
         if (item != null && item.hasItemMeta() && item.getItemMeta() != null && item.getItemMeta().hasDisplayName())
         {
             String name = item.getItemMeta().getDisplayName();
-            String configName = ChatColor.translateAlternateColorCodes('&', Settings.hS.get(Config.STRING.nameOfCoin));
+            String configName = ChatColor.translateAlternateColorCodes('&', Settings.get(Config.STRING.nameOfCoin));
             if (name.contains(configName))
             {
                 e.setCancelled(true);

@@ -17,9 +17,9 @@ public class Coin
 
     public Coin ()
     {
-        String texture = Settings.hS.get(Config.STRING.skullTexture);
+        String texture = Settings.get(Config.STRING.skullTexture);
         this.coin = texture == null || texture.isEmpty()?
-                new ItemStack(Material.valueOf(Settings.hS.get(Config.STRING.coinItem)))
+                new ItemStack(Material.valueOf(Settings.get(Config.STRING.coinItem)))
                 : SkullValue.get(texture);
 
         if (coin != null)
@@ -27,7 +27,7 @@ public class Coin
             ItemMeta meta = this.coin.getItemMeta();
             if (meta != null)
             {
-                meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', Settings.hS.get(Config.STRING.nameOfCoin)));
+                meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', Settings.get(Config.STRING.nameOfCoin)));
                 meta.setLore(new ArrayList<>());
             }
             this.coin.setItemMeta(meta);
@@ -60,7 +60,7 @@ public class Coin
         ItemMeta meta = this.coin.getItemMeta();
         if (meta != null)
             meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&e" + amount + " &r" +
-                    Settings.hS.get(Config.STRING.nameOfCoin) + Settings.hS.get(Config.STRING.multiSuffix)));
+                    Settings.get(Config.STRING.nameOfCoin) + Settings.get(Config.STRING.multiSuffix)));
         this.coin.setItemMeta(meta);
 
         return this;

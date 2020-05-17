@@ -8,6 +8,7 @@ import me.justeli.coins.cancel.CancelInventories;
 import me.justeli.coins.cancel.CoinPlace;
 import me.justeli.coins.cancel.PreventSpawner;
 import me.justeli.coins.economy.CoinStorage;
+import me.justeli.coins.economy.CoinsEconomy;
 import me.justeli.coins.economy.CoinsEffect;
 import me.justeli.coins.events.CoinsPickup;
 import me.justeli.coins.events.DropCoin;
@@ -25,6 +26,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -53,9 +55,13 @@ public class Coins
     }
 
     // todo add NBT-tags for coins
-    // todo able to pickup with inventory full
-    // todo support for standalone Vault
-    // todo !!an option to require the majority of player damage to drop coins
+    // todo !!able to pickup with inventory full
+    // todo !!support for standalone Vault
+    // todo actionbar for coins transactions
+    // todo use integrated bstats metrics from spigot
+    // todo host on a maven repository
+    // todo proper formatting before saving to disk i.e.  %.2f
+    // todo check if eco supportive plugin is installed, if not: use coins economy
     // todo add option to not let balance go negative (with dropOnDeath: true)
     // todo coin and/or bill textures using NBT data and a resource pack
     // todo Can you add config for specific blocks for mining?
@@ -71,14 +77,6 @@ public class Coins
     {
         main = this;
         Locale.setDefault(Locale.US);
-
-        //Methods.setVersion(this.getDescription().getVersion());
-        //Methods.setMethod(this.getServer().getPluginManager());
-
-        if (Settings.hB.get(Config.BOOLEAN.coinsEconomy))
-        {
-            CoinStorage.initPlayerData();
-        }
 
         registerConfig();
         registerEvents();
@@ -116,31 +114,31 @@ public class Coins
         later(1, () ->
         {
             Metrics metrics = new Metrics(this);
-            String texture = Settings.hS.get(Config.STRING.skullTexture);
+            String texture = Settings.get(Config.STRING.skullTexture);
 
             metrics.add("language", WordUtils.capitalize(Settings.getLanguage()));
-            metrics.add("currencySymbol", Settings.hS.get(Config.STRING.currencySymbol));
-            metrics.add("dropChance", Settings.hD.get(Config.DOUBLE.dropChance) * 100 + "%");
-            metrics.add("dropEachCoin", String.valueOf(Settings.hB.get(Config.BOOLEAN.dropEachCoin)));
-            metrics.add("pickupSound", Settings.hS.get(Config.STRING.soundName));
-            metrics.add("enableWithdraw", String.valueOf(Settings.hB.get(Config.BOOLEAN.enableWithdraw)));
-            metrics.add("loseOnDeath", String.valueOf(Settings.hB.get(Config.BOOLEAN.loseOnDeath)));
-            metrics.add("passiveDrop", String.valueOf(Settings.hB.get(Config.BOOLEAN.passiveDrop)));
+            metrics.add("currencySymbol", Settings.get(Config.STRING.currencySymbol));
+            metrics.add("dropChance", Settings.get(Config.DOUBLE.dropChance) * 100 + "%");
+            metrics.add("dropEachCoin", String.valueOf(Settings.get(Config.BOOLEAN.dropEachCoin)));
+            metrics.add("pickupSound", Settings.get(Config.STRING.soundName));
+            metrics.add("enableWithdraw", String.valueOf(Settings.get(Config.BOOLEAN.enableWithdraw)));
+            metrics.add("loseOnDeath", String.valueOf(Settings.get(Config.BOOLEAN.loseOnDeath)));
+            metrics.add("passiveDrop", String.valueOf(Settings.get(Config.BOOLEAN.passiveDrop)));
 
-            metrics.add("nameOfCoin", Settings.hS.get(Config.STRING.nameOfCoin));
-            metrics.add("coinItem", Settings.hS.get(Config.STRING.coinItem));
-            metrics.add("pickupMessage", Settings.hS.get(Config.STRING.pickupMessage));
-            metrics.add("moneyDecimals", String.valueOf(Settings.hD.get(Config.DOUBLE.moneyDecimals).intValue()));
-            metrics.add("stackCoins", String.valueOf(Settings.hB.get(Config.BOOLEAN.stackCoins)));
-            metrics.add("playerDrop", String.valueOf(Settings.hB.get(Config.BOOLEAN.playerDrop)));
-            metrics.add("spawnerDrop", String.valueOf(Settings.hB.get(Config.BOOLEAN.spawnerDrop)));
-            metrics.add("preventSplits", String.valueOf(Settings.hB.get(Config.BOOLEAN.preventSplits)));
+            metrics.add("nameOfCoin", Settings.get(Config.STRING.nameOfCoin));
+            metrics.add("coinItem", Settings.get(Config.STRING.coinItem));
+            metrics.add("pickupMessage", Settings.get(Config.STRING.depositMessage));
+            metrics.add("moneyDecimals", String.valueOf(Settings.get(Config.DOUBLE.moneyDecimals).intValue()));
+            metrics.add("stackCoins", String.valueOf(Settings.get(Config.BOOLEAN.stackCoins)));
+            metrics.add("playerDrop", String.valueOf(Settings.get(Config.BOOLEAN.playerDrop)));
+            metrics.add("spawnerDrop", String.valueOf(Settings.get(Config.BOOLEAN.spawnerDrop)));
+            metrics.add("preventSplits", String.valueOf(Settings.get(Config.BOOLEAN.preventSplits)));
 
-            metrics.add("moneyAmount", (String.valueOf((Settings.hD.get(Config.DOUBLE.moneyAmount_from) +
-                    Settings.hD.get(Config.DOUBLE.moneyAmount_to)) / 2)));
+            metrics.add("moneyAmount", (String.valueOf((Settings.get(Config.DOUBLE.moneyAmount_from) +
+                    Settings.get(Config.DOUBLE.moneyAmount_to)) / 2)));
             metrics.add("usingSkullTexture", String.valueOf(texture != null && !texture.isEmpty()));
-            metrics.add("disableHoppers", String.valueOf(Settings.hB.get(Config.BOOLEAN.disableHoppers)));
-            metrics.add("dropWithAnyDeath", String.valueOf(Settings.hB.get(Config.BOOLEAN.dropWithAnyDeath)));
+            metrics.add("disableHoppers", String.valueOf(Settings.get(Config.BOOLEAN.disableHoppers)));
+            metrics.add("dropWithAnyDeath", String.valueOf(Settings.get(Config.BOOLEAN.dropWithAnyDeath)));
         });
 
         if (getServer().getPluginManager().getPlugin("Vault") == null)
@@ -149,9 +147,18 @@ public class Coins
         try
         {
             RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+
+            if (Settings.get(Config.BOOLEAN.coinsEconomy) || rsp == null)
+            {
+                Bukkit.getServicesManager().register(Economy.class, new CoinsEconomy(), this, ServicePriority.Highest);
+                CoinStorage.initPlayerData();
+
+                rsp = getServer().getServicesManager().getRegistration(Economy.class);
+                Settings.setCoinsEconomy(true);
+            }
             eco = rsp.getProvider();
         }
-        catch (NullPointerException | NoClassDefFoundError e)
+        catch (NoClassDefFoundError e)
         {
             Settings.errorMessage(Settings.Msg.NO_ECONOMY_SUPPORT, new String[]{""});
             Bukkit.getPluginManager().disablePlugin(this);
@@ -195,7 +202,7 @@ public class Coins
         this.getCommand("coins").setExecutor(new Cmds());
         this.getCommand("coins").setTabCompleter(new TabComplete());
 
-        if (Settings.hB.get(Config.BOOLEAN.enableWithdraw))
+        if (Settings.get(Config.BOOLEAN.enableWithdraw))
         {
             this.getCommand("withdraw").setExecutor(new Cmds());
             this.getCommand("withdraw").setTabCompleter(new TabComplete());

@@ -33,7 +33,7 @@ public class SkullValue
         if (texture.isEmpty())
             return null;
 
-        ItemStack skull = Settings.hB.get(Config.BOOLEAN.newerServer)? new ItemStack(Material.PLAYER_HEAD)
+        ItemStack skull = Settings.get(Config.BOOLEAN.newerServer)? new ItemStack(Material.PLAYER_HEAD)
                 : new ItemStack(Material.matchMaterial("SKULL_ITEM"), 1, (short) 3);
 
         SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();

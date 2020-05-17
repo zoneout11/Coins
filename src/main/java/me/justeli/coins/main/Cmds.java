@@ -115,7 +115,7 @@ public class Cmds
 
         else if (l.equalsIgnoreCase("withdraw"))
         {
-            if (!Settings.hB.get(Config.BOOLEAN.enableWithdraw))
+            if (!Settings.get(Config.BOOLEAN.enableWithdraw))
                 return false;
 
             if (!sender.hasPermission("coins.withdraw") || !(sender instanceof Player))
@@ -124,7 +124,7 @@ public class Cmds
                 return true;
             }
 
-            for (String world : Settings.hA.get(Config.ARRAY.disabledWorlds))
+            for (String world : Settings.get(Config.ARRAY.disabledWorlds))
             {
                 if (((Player) sender).getWorld().getName().equalsIgnoreCase(world))
                 {
@@ -146,7 +146,7 @@ public class Cmds
                     return true;
                 }
 
-                if (amount > 0 && amount <= Settings.hD.get(Config.DOUBLE.maxWithdrawAmount) && Coins.getEconomy().getBalance(p) >= amount)
+                if (amount > 0 && amount <= Settings.get(Config.DOUBLE.maxWithdrawAmount) && Coins.getEconomy().getBalance(p) >= amount)
                 {
                     if (p.getInventory().firstEmpty() == -1)
                     {
@@ -156,8 +156,8 @@ public class Cmds
                     p.getInventory().addItem(new Coin().withdraw(amount).item());
                     Coins.getEconomy().withdrawPlayer(p, amount);
                     p.sendMessage(color(Messages.WITHDRAW_COINS.toString().replace("{0}", Long.toString(amount))));
-                    new ActionBar(Settings.hS.get(Config.STRING.deathMessage).replace("%amount%", String.valueOf(amount))
-                            .replace("{$}", Settings.hS.get(Config.STRING.currencySymbol))).send(p);
+                    new ActionBar(Settings.get(Config.STRING.withdrawMessage).replace("{%amount}", String.valueOf(amount))
+                            .replace("{$}", Settings.get(Config.STRING.currencySymbol))).send(p);
                 }
                 else p.sendMessage(color(Messages.NOT_THAT_MUCH.toString()));
             }
@@ -235,7 +235,7 @@ public class Cmds
                 if (p == null)
                     p = (Player) sender;
 
-                for (String world : Settings.hA.get(Config.ARRAY.disabledWorlds))
+                for (String world : Settings.get(Config.ARRAY.disabledWorlds))
                 {
                     if (p.getWorld().getName().equalsIgnoreCase(world))
                     {
@@ -307,7 +307,7 @@ public class Cmds
                 Item i = (Item) m;
                 if (i.getItemStack().getItemMeta() != null && i.getItemStack().getItemMeta().hasDisplayName())
                 {
-                    if (i.getItemStack().getItemMeta().getDisplayName().equals((color(Settings.hS.get(Config.STRING.nameOfCoin)))))
+                    if (i.getItemStack().getItemMeta().getDisplayName().equals((color(Settings.get(Config.STRING.nameOfCoin)))))
                     {
                         amount++;
                         double random = (Math.random() * 3);
@@ -357,7 +357,7 @@ public class Cmds
             sender.sendMessage(color(Messages.VERSION_CHECK.toString()));
         }
 
-        if (Settings.hB.get(Config.BOOLEAN.enableWithdraw) && sender.hasPermission("coins.withdraw"))
+        if (Settings.get(Config.BOOLEAN.enableWithdraw) && sender.hasPermission("coins.withdraw"))
             sender.sendMessage(color(Messages.WITHDRAW_USAGE.toString()));
     }
 

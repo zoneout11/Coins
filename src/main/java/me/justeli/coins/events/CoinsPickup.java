@@ -25,13 +25,12 @@ public class CoinsPickup
         implements Listener
 {
     private final static HashMap<String, Boolean> thrown = new HashMap<>();
-    private final static HashMap<UUID, Double> pickup = new HashMap<>();
 
     @EventHandler (ignoreCancelled = true)
     @SuppressWarnings ("deprecation")
     public void onPickup (PlayerPickupItemEvent e)
     {
-        for (String world : Settings.hA.get(Config.ARRAY.disabledWorlds))
+        for (String world : Settings.get(Config.ARRAY.disabledWorlds))
             if (e.getPlayer().getWorld().getName().equalsIgnoreCase(world))
                 return;
 
@@ -40,7 +39,7 @@ public class CoinsPickup
         if (item.getItemStack().getItemMeta() != null && item.getItemStack().getItemMeta().hasDisplayName())
         {
             String pickupName = item.getItemStack().getItemMeta().getDisplayName();
-            String coinName = ChatColor.translateAlternateColorCodes('&', Settings.hS.get(Config.STRING.nameOfCoin));
+            String coinName = ChatColor.translateAlternateColorCodes('&', Settings.get(Config.STRING.nameOfCoin));
 
             if (pickupName.equals(coinName))
             {
@@ -50,7 +49,7 @@ public class CoinsPickup
                 if (!p.hasPermission("coins.disable") || p.isOp() || p.hasPermission("*"))
                     giveCoin(item, e.getPlayer(), 0);
             }
-            else if (pickupName.endsWith(coinName + Settings.hS.get(Config.STRING.multiSuffix)))
+            else if (pickupName.endsWith(coinName + Settings.get(Config.STRING.multiSuffix)))
             {
                 e.setCancelled(true);
                 int amount = Integer.parseInt(ChatColor.stripColor(pickupName.split(" ")[0]));
@@ -84,17 +83,17 @@ public class CoinsPickup
                 if (randomMoney == 0) giveReward(item.getItemStack(), p);
                 else addMoney(p, (double) randomMoney, 0);
 
-                if (Settings.hB.get(Config.BOOLEAN.pickupSound))
+                if (Settings.get(Config.BOOLEAN.pickupSound))
                 {
                     try
                     {
-                        String sound = Settings.hS.get(Config.STRING.soundName);
+                        String sound = Settings.get(Config.STRING.soundName);
 
-                        Sound playSound = Sound.valueOf(Settings.hB.get(Config.BOOLEAN.olderServer) && (sound.equals("BLOCK_LAVA_POP") || sound
+                        Sound playSound = Sound.valueOf(Settings.get(Config.BOOLEAN.olderServer) && (sound.equals("BLOCK_LAVA_POP") || sound
                                 .equals("ITEM_ARMOR_EQUIP_GOLD"))? "NOTE_STICKS" : sound.toUpperCase());
 
-                        float volume = Settings.hD.get(Config.DOUBLE.pickupVolume).floatValue();
-                        float pitch = Settings.hD.get(Config.DOUBLE.pickupPitch).floatValue();
+                        float volume = Settings.get(Config.DOUBLE.pickupVolume).floatValue();
+                        float pitch = Settings.get(Config.DOUBLE.pickupPitch).floatValue();
 
                         p.playSound(p.getEyeLocation(), playSound, volume == 0? 0.3f : volume, pitch == 0? 0.3f : pitch);
                     }
@@ -110,40 +109,25 @@ public class CoinsPickup
 
     public static void giveReward (ItemStack item, Player p)
     {
-        if (Settings.hB.get(Config.BOOLEAN.dropEachCoin))
+        if (Settings.get(Config.BOOLEAN.dropEachCoin))
         {
             addMoney(p, (double) item.getAmount(), 0);
             return;
         }
 
-        double second = Settings.hD.get(Config.DOUBLE.moneyAmount_from);
-        double first = Settings.hD.get(Config.DOUBLE.moneyAmount_to) - second;
+        double second = Settings.get(Config.DOUBLE.moneyAmount_from);
+        double first = Settings.get(Config.DOUBLE.moneyAmount_to) - second;
 
         int amount = item.getAmount();
         Double total = amount * (Math.random() * first + second);
 
-        addMoney(p, total, Settings.hD.get(Config.DOUBLE.moneyDecimals).intValue());
+        addMoney(p, total, Settings.get(Config.DOUBLE.moneyDecimals).intValue());
     }
 
     public static void addMoney (Player p, Double a, int integer)
     {
         final double amount = format(a, integer);
         Coins.getEconomy().depositPlayer(p, amount);
-
-        final UUID u = p.getUniqueId();
-
-        pickup.put(u, amount + (pickup.containsKey(u)? format(pickup.get(u), integer) : 0));
-        final Double newAmount = format(pickup.get(u), integer);
-
-        Runnable task = () ->
-        {
-            if (pickup.containsKey(u) && format(pickup.get(u), integer).equals(newAmount))
-                pickup.remove(u);
-        };
-        Bukkit.getScheduler().runTaskLater(Coins.getInstance(), task, Settings.hB.get(Config.BOOLEAN.dropEachCoin)? 30L : 10L);
-
-        new ActionBar(Settings.hS.get(Config.STRING.pickupMessage).replace("%amount%", String.format("%." + integer + "f", newAmount))
-                .replace("{$}", Settings.hS.get(Config.STRING.currencySymbol))).send(p);
     }
 
     private static Double format (Double amount, int decimals)

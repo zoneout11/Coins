@@ -1,20 +1,29 @@
 package me.justeli.coins.economy;
 
 import me.justeli.coins.Coins;
+import me.justeli.coins.api.ActionBar;
 import me.justeli.coins.item.Coin;
 import me.justeli.coins.settings.Config;
 import me.justeli.coins.settings.Settings;
+import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
 
+import java.util.HashMap;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -23,14 +32,50 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class CoinsEffect implements Listener
 {
+    @EventHandler (priority = EventPriority.LOW)
+    public void createAccount (PlayerJoinEvent e)
+    {
+        if (Settings.get(Config.BOOLEAN.coinsEconomy) && !Coins.getEconomy().hasAccount(e.getPlayer()))
+            Coins.getEconomy().createPlayerAccount(e.getPlayer());
+    }
+
+    private final static HashMap<UUID, Double> pickup = new HashMap<>();
+
     @EventHandler
     public void coins (BalanceChangeEvent e)
     {
-        if (!Settings.hB.get(Config.BOOLEAN.coinsEffect))
+        if (!e.getPlayer().isOnline() || e.getPlayer().getPlayer() == null)
             return;
 
-        long difference = -(long) (e.getNewAmount() - e.getPreviousAmount());
-        if (difference > 0) coinsEffect(e.getPlayer().getEyeLocation(), (int) difference);
+        Player p = e.getPlayer().getPlayer();
+        double amount = e.getTransactionAmount();
+
+        if (amount == 0)
+            return;
+
+        final UUID u = p.getUniqueId();
+        pickup.put(u, amount + (pickup.containsKey(u)? pickup.get(u) : 0));
+        final Double newAmount = pickup.get(u);
+
+        String format = Coins.getEconomy().format(Math.abs(newAmount));
+        if (amount > 0)
+        {
+            new ActionBar(Settings.get(Config.STRING.depositMessage).replace("{display}", format)).send(p);
+        }
+        else
+        {
+            new ActionBar(Settings.get(Config.STRING.withdrawMessage).replace("{display}", format)).send(p);
+            if (Settings.get(Config.BOOLEAN.coinsEffect))
+                coinsEffect(p.getEyeLocation(), (int) -amount);
+        }
+
+        Runnable task = () ->
+        {
+            if (pickup.containsKey(u) && pickup.get(u).equals(newAmount))
+                pickup.remove(u);
+        };
+        Bukkit.getScheduler().runTaskLater(Coins.getInstance(), task, Settings.get(Config.BOOLEAN.dropEachCoin)? 30L : 10L);
+
     }
 
     @EventHandler (ignoreCancelled = true)

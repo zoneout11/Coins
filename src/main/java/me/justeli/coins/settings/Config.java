@@ -36,13 +36,14 @@ public enum Config
     {
         nameOfCoin,
         coinItem,
-        pickupMessage,
-        deathMessage,
+        depositMessage,
+        withdrawMessage,
         soundName,
         mobMultiplier,
         currencySymbol,
         multiSuffix,
         skullTexture,
+        displayCurrency,
     }
 
     public enum DOUBLE

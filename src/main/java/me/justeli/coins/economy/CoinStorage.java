@@ -1,6 +1,7 @@
 package me.justeli.coins.economy;
 
 import me.justeli.coins.Coins;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -25,6 +26,9 @@ public class CoinStorage
 
     public static void initPlayerData ()
     {
+        File data = getPluginFile(Coins.getInstance(), "data");
+        if (!data.exists()) data.mkdir();
+
         File folder = getPluginFile(Coins.getInstance(), "data/players");
         if (!folder.exists()) folder.mkdir();
 
@@ -32,10 +36,10 @@ public class CoinStorage
         if (files == null)
             return;
 
-        for (File uuid : files)
+        for (File uuidFile : files)
         {
-            playerData.put(UUID.fromString(uuid.getName().replace(".yml", "")),
-                    getFileConfiguration(Coins.getInstance(), String.format("data/players/%s.yml", uuid)));
+            UUID uuid = UUID.fromString(uuidFile.getName().replace(".yml", ""));
+            playerData.put(uuid, getFileConfiguration(Coins.getInstance(), String.format("data/players/%s.yml", uuid.toString())));
         }
     }
 
@@ -98,7 +102,7 @@ public class CoinStorage
         EXECUTOR_SERVICE.submit(() -> Thread.currentThread().setName("coins-storage"));
     }
 
-    private static void saveFile (FileConfiguration data, File file)
+    public static void saveFile (FileConfiguration data, File file)
     {
         Path path = file.toPath();
         String stringData = data.saveToString();

@@ -22,11 +22,11 @@ public class CancelHopper
             if (item.getItemMeta() != null && item.getItemMeta().hasDisplayName())
             {
                 String pickupName = item.getItemMeta().getDisplayName();
-                String coinName = ChatColor.translateAlternateColorCodes('&', Settings.hS.get(Config.STRING.nameOfCoin));
+                String coinName = ChatColor.translateAlternateColorCodes('&', Settings.get(Config.STRING.nameOfCoin));
 
                 if (pickupName.equals(coinName))
                 {
-                    if (Settings.hB.get(Config.BOOLEAN.disableHoppers)) e.setCancelled(true);
+                    if (Settings.get(Config.BOOLEAN.disableHoppers)) e.setCancelled(true);
                     else if (item.getItemMeta().hasLore()) e.getItem().setItemStack(new ItemStack(new Coin().item()));
                 }
             }

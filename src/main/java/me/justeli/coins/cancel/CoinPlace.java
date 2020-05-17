@@ -30,11 +30,11 @@ public class CoinPlace
             Player p = e.getPlayer();
 
             String pickupName = e.getItem().getItemMeta().getDisplayName();
-            String coinName = ChatColor.translateAlternateColorCodes('&', Settings.hS.get(Config.STRING.nameOfCoin));
+            String coinName = ChatColor.translateAlternateColorCodes('&', Settings.get(Config.STRING.nameOfCoin));
 
-            if (pickupName.endsWith(coinName + Settings.hS.get(Config.STRING.multiSuffix)))
+            if (pickupName.endsWith(coinName + Settings.get(Config.STRING.multiSuffix)))
             {
-                if (Settings.hB.get(Config.BOOLEAN.olderServer) || !p.hasPermission("coins.withdraw"))
+                if (Settings.get(Config.BOOLEAN.olderServer) || !p.hasPermission("coins.withdraw"))
                 {
                     e.setCancelled(true);
                     return;

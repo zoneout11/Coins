@@ -35,6 +35,6 @@ public enum Messages
     @Override
     public String toString ()
     {
-        return Settings.language.get(this).replace("{$}", Settings.hS.get(Config.STRING.currencySymbol));
+        return Settings.language.get(this).replace("{$}", Settings.get(Config.STRING.currencySymbol));
     }
 }
