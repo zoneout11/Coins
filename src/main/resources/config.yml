@@ -130,10 +130,23 @@ enableWithdraw: true
 maxWithdrawAmount: 10000.0
 
 # Drop coins for mined blocks. What's the chance? (0.2 = 20% = 1 coin per 5 /experience/ blocks mined)
-minePercentage: 0.3
+# /DELETE/ minePercentage: 0.2
 
-# Only drop coins by the given chance for blocks that drop experience, like: lapis, iron, spawners.
-onlyExperienceBlocks: true
+# Only drop coins by the given chance for blocks that drop experience, like: lapis, coal, spawners.
+# /DELETE/ onlyExperienceBlocks: true
+experienceBlocks:
+  GOLD_ORE: 0.5
+  IRON_ORE: 0.3
+  COAL_ORE: 0.2
+  SPONGE: 0.1
+  LAPIS_LAZULI_ORE: 0.2
+  DIAMOND_ORE: 0.6
+  REDSTONE_ORE: 0.2
+  EMERALD_ORE: 0.6
+  NETHER_QUARTZ_ORE: 0.1
+  NETHERITE: 0.7
+  SPAWNER: 1.0
+# ^^^^^^^ but what if player places block again and breaks again
 
 # # # # # # # # # #
 # Death Settings  #

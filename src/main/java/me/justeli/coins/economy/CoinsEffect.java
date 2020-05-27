@@ -32,11 +32,17 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class CoinsEffect implements Listener
 {
-    @EventHandler (priority = EventPriority.LOW)
+    @EventHandler (priority = EventPriority.LOWEST)
     public void createAccount (PlayerJoinEvent e)
     {
         if (Settings.get(Config.BOOLEAN.coinsEconomy) && !Coins.getEconomy().hasAccount(e.getPlayer()))
             Coins.getEconomy().createPlayerAccount(e.getPlayer());
+    }
+
+    @EventHandler (priority = EventPriority.MONITOR)
+    public void deleteOfflineBalance (PlayerJoinEvent e)
+    {
+        CoinStorage.setStorage(e.getPlayer().getUniqueId(), "offlineBalance", null);
     }
 
     private final static HashMap<UUID, Double> pickup = new HashMap<>();
@@ -58,16 +64,7 @@ public class CoinsEffect implements Listener
         final Double newAmount = pickup.get(u);
 
         String format = Coins.getEconomy().format(Math.abs(newAmount));
-        if (amount > 0)
-        {
-            new ActionBar(Settings.get(Config.STRING.depositMessage).replace("{display}", format)).send(p);
-        }
-        else
-        {
-            new ActionBar(Settings.get(Config.STRING.withdrawMessage).replace("{display}", format)).send(p);
-            if (Settings.get(Config.BOOLEAN.coinsEffect))
-                coinsEffect(p.getEyeLocation(), (int) -amount);
-        }
+        new ActionBar(Settings.get(amount > 0? Config.STRING.depositMessage : Config.STRING.withdrawMessage).replace("{display}", format)).send(p);
 
         Runnable task = () ->
         {
@@ -76,6 +73,8 @@ public class CoinsEffect implements Listener
         };
         Bukkit.getScheduler().runTaskLater(Coins.getInstance(), task, Settings.get(Config.BOOLEAN.dropEachCoin)? 30L : 10L);
 
+        if (amount < 0 && Settings.get(Config.BOOLEAN.coinsEffect))
+            coinsEffect(p.getEyeLocation(), (int) -amount);
     }
 
     @EventHandler (ignoreCancelled = true)

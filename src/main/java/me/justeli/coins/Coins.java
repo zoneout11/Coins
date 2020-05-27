@@ -55,21 +55,21 @@ public class Coins
     }
 
     // todo add NBT-tags for coins
+    // https://hub.spigotmc.org/javadocs/spigot/org/bukkit/inventory/meta/tags/CustomItemTagContainer.html
     // todo !!able to pickup with inventory full
-    // todo !!support for standalone Vault
-    // todo actionbar for coins transactions
+    // https://www.spigotmc.org/threads/fake-item-pickup-playerpickupitemevent-with-full-inventory.156983/#post-2062690
     // todo use integrated bstats metrics from spigot
     // todo host on a maven repository
+    // https://help.github.com/en/packages/using-github-packages-with-your-projects-ecosystem/configuring-apache-maven-for-use-with-github-packages
     // todo proper formatting before saving to disk i.e.  %.2f
-    // todo check if eco supportive plugin is installed, if not: use coins economy
+    // todo add option for enchanted coin
+    // todo extending the /withdraw command to /witdraw [amount to withdraw] [how many times] so "/withdraw 5 64" would give me a stack of 5coin sunflowers
     // todo add option to not let balance go negative (with dropOnDeath: true)
     // todo coin and/or bill textures using NBT data and a resource pack
     // todo Can you add config for specific blocks for mining?
     // todo set different materials as different worths, ex: you could have bronze, silver and gold coins
     // todo generating of coins in dungeons chests
 
-    // todo https://www.spigotmc.org/threads/fake-item-pickup-playerpickupitemevent-with-full-inventory.156983/#post-2062690
-    // https://hub.spigotmc.org/javadocs/spigot/org/bukkit/inventory/meta/tags/CustomItemTagContainer.html
     // https://www.spigotmc.org/resources/pickupmoney.11334/
 
     @Override

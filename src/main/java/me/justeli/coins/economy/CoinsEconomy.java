@@ -5,12 +5,10 @@ import me.justeli.coins.settings.Config;
 import me.justeli.coins.settings.Settings;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,15 +48,10 @@ public class CoinsEconomy
     @Override
     public String format (double amount) //todo proper decimals
     {
-        double coins = Double.parseDouble(String.valueOf(amount));
-
         int integer = Settings.get(Config.DOUBLE.moneyDecimals).intValue();
-        DecimalFormat formatter =
-                new DecimalFormat("#,###" + (integer == 0? "" : ".") + StringUtils.repeat("0", integer));
-
         return Settings.get(Config.STRING.displayCurrency)
                 .replace("{$}", Settings.get(Config.STRING.currencySymbol))
-                .replace("{amount}", formatter.format(coins));
+                .replace("{amount}", String.format("%,." + integer + "f", amount));
     }
 
     @Override
@@ -331,11 +324,19 @@ public class CoinsEconomy
         double balance = getBalance(player);
         if (!(amount == balance))
         {
-            BalanceChangeEvent event = new BalanceChangeEvent(player, amount, balance, amount - balance);
+            double transaction = amount - balance;
+            BalanceChangeEvent event = new BalanceChangeEvent(player, amount, balance, transaction);
             Bukkit.getServer().getPluginManager().callEvent(event);
 
             if (!event.isCancelled())
+            {
                 CoinStorage.setStorage(player.getUniqueId(), "balance", amount);
+                if (!player.isOnline())
+                {
+                    double offline = CoinStorage.getStorage(player.getUniqueId()).getDouble("offlineBalance");
+                    CoinStorage.setStorage(player.getUniqueId(), "offlineBalance", offline + transaction);
+                }
+            }
         }
     }
 }
