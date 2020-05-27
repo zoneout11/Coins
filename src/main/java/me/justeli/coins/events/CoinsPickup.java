@@ -1,10 +1,8 @@
 package me.justeli.coins.events;
 
 import me.justeli.coins.Coins;
-import me.justeli.coins.api.ActionBar;
 import me.justeli.coins.settings.Config;
 import me.justeli.coins.settings.Settings;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.entity.Item;
@@ -19,7 +17,6 @@ import org.bukkit.util.Vector;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.UUID;
 
 public class CoinsPickup
         implements Listener
@@ -92,8 +89,8 @@ public class CoinsPickup
                         Sound playSound = Sound.valueOf(Settings.get(Config.BOOLEAN.olderServer) && (sound.equals("BLOCK_LAVA_POP") || sound
                                 .equals("ITEM_ARMOR_EQUIP_GOLD"))? "NOTE_STICKS" : sound.toUpperCase());
 
-                        float volume = Settings.get(Config.DOUBLE.pickupVolume).floatValue();
-                        float pitch = Settings.get(Config.DOUBLE.pickupPitch).floatValue();
+                        float volume = Settings.get(Config.DOUBLE.soundVolume).floatValue();
+                        float pitch = Settings.get(Config.DOUBLE.soundPitch).floatValue();
 
                         p.playSound(p.getEyeLocation(), playSound, volume == 0? 0.3f : volume, pitch == 0? 0.3f : pitch);
                     }

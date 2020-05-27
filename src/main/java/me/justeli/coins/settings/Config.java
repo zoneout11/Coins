@@ -30,6 +30,7 @@ public enum Config
         coinsEconomy,
         coinsEffect,
         trackEconomy,
+        enchantedCoin,
     }
 
     public enum STRING
@@ -56,8 +57,8 @@ public enum Config
         moneyTaken_to,
         moneyDecimals,
         minePercentage,
-        pickupPitch,
-        pickupVolume,
+        soundPitch,
+        soundVolume,
         limitForLocation,
         percentagePlayerHit,
         startingBalance,
