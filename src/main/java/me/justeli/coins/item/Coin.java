@@ -1,85 +1,102 @@
 package me.justeli.coins.item;
 
-import me.justeli.coins.api.SkullValue;
+import me.justeli.coins.Coins;
+import me.justeli.coins.api.Format;
 import me.justeli.coins.settings.Config;
-import me.justeli.coins.settings.Settings;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
+import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * Created by Eli on June 08, 2020.
+ * Coins: me.justeli.coins.item
+ */
 public class Coin
 {
-    private ItemStack coin;
+    private final ItemStack coin;
+    private final ItemMeta meta;
+    private final Double worth;
+
+    public Coin (double worth)
+    {
+        this.coin = Coins.getInstance().getSettings().getGeneratedCoin().getCoin();
+        this.meta = coin.getItemMeta();
+        this.worth = worth;
+    }
 
     public Coin ()
     {
-        String texture = Settings.get(Config.STRING.skullTexture);
-        this.coin = texture == null || texture.isEmpty()?
-                new ItemStack(Material.valueOf(Settings.get(Config.STRING.coinItem)))
-                : SkullValue.get(texture);
+        this.coin = Coins.getInstance().getSettings().getGeneratedCoin().getCoin();
+        this.meta = coin.getItemMeta();
 
-        if (coin != null)
-        {
-            ItemMeta meta = this.coin.getItemMeta();
-            if (meta != null)
-            {
-                meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', Settings.get(Config.STRING.nameOfCoin)));
-                meta.setLore(new ArrayList<>());
-                if (Settings.get(Config.BOOLEAN.enchantedCoin))
-                    meta.addEnchant(Enchantment.DURABILITY, 1, true);
-            }
-            this.coin.setItemMeta(meta);
-        }
+        double second = Config.get(Config.DOUBLE.MONEY_AMOUNT__FROM);
+        double first = Config.get(Config.DOUBLE.MONEY_AMOUNT__TO) - second;
+
+        this.worth = Math.random() * first + second;
     }
 
-    /**
-     * Sets the coin to be NOT stackable.
-     */
-    public Coin unique ()
+    public Coin setFor (Player p)
     {
-        ItemMeta meta = this.coin.getItemMeta();
-        if (meta != null)
-            meta.setLore(Collections.singletonList(String.valueOf(Math.random())));
-        this.coin.setItemMeta(meta);
-
+        setTag("player", p.getName());
         return this;
     }
 
-    /**
-     * Makes it a withdrawn item.
-     *
-     * @param amount amount of coins
-     *
-     * @return the Coin
-     */
-
-    public Coin withdraw (long amount)
+    public Coin worth (double coins)
     {
-        ItemMeta meta = this.coin.getItemMeta();
-        if (meta != null)
-            meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&e" + amount + " &r" +
-                    Settings.get(Config.STRING.nameOfCoin) + Settings.get(Config.STRING.multiSuffix)));
-        this.coin.setItemMeta(meta);
+        setTag("coin", coins);
+        return this;
+    }
 
+    public Coin unique ()
+    {
+        setLore(String.valueOf(ThreadLocalRandom.current().nextDouble()));
         return this;
     }
 
     public Coin stack (boolean stack)
     {
-        return stack? this : unique();
+        if (!stack) unique();
+        else setLore();
+        return this;
     }
 
-    /**
-     * @return the ItemStack itself.
-     */
-    public ItemStack item ()
+    public Coin withdraw ()
     {
-        return this.coin;
+        setName("&e" + worth + " " + Config.get(Config.STRING.NAME_OF_COIN) + Config.get(Config.STRING.MULTI_SUFFIX));
+        return this;
     }
 
+    public ItemStack create ()
+    {
+        setTag("coin", worth);
+        coin.setItemMeta(meta);
+        return coin;
+    }
+
+    private void setName (String name)
+    {
+        meta.setDisplayName(Format.color(name));
+    }
+
+    private void setLore (String... lore)
+    {
+        meta.setLore(Arrays.asList(lore));
+    }
+
+    private void setTag (String key, String tag)
+    {
+        NamespacedKey namespacedKey = new NamespacedKey(Coins.getInstance(), key);
+        meta.getPersistentDataContainer().set(namespacedKey, PersistentDataType.STRING, tag);
+    }
+
+    private void setTag (String key, Double tag)
+    {
+        NamespacedKey namespacedKey = new NamespacedKey(Coins.getInstance(), key);
+        meta.getPersistentDataContainer().set(namespacedKey, PersistentDataType.DOUBLE, tag);
+    }
 }

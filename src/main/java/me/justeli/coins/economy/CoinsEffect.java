@@ -1,14 +1,13 @@
 package me.justeli.coins.economy;
 
 import me.justeli.coins.Coins;
-import me.justeli.coins.api.ActionBar;
+import me.justeli.coins.api.Format;
 import me.justeli.coins.item.Coin;
 import me.justeli.coins.settings.Config;
-import me.justeli.coins.settings.Settings;
-import net.milkbowl.vault.economy.Economy;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -35,7 +34,7 @@ public class CoinsEffect implements Listener
     @EventHandler (priority = EventPriority.LOWEST)
     public void createAccount (PlayerJoinEvent e)
     {
-        if (Settings.get(Config.BOOLEAN.coinsEconomy) && !Coins.getEconomy().hasAccount(e.getPlayer()))
+        if (Config.get(Config.BOOLEAN.COINS_ECONOMY) && !Coins.getEconomy().hasAccount(e.getPlayer()))
             Coins.getEconomy().createPlayerAccount(e.getPlayer());
     }
 
@@ -64,16 +63,17 @@ public class CoinsEffect implements Listener
         final Double newAmount = pickup.get(u);
 
         String format = Coins.getEconomy().format(Math.abs(newAmount));
-        new ActionBar(Settings.get(amount > 0? Config.STRING.depositMessage : Config.STRING.withdrawMessage).replace("{display}", format)).send(p);
+        String bar = Format.color(Config.get(amount > 0? Config.STRING.DEPOSIT_MESSAGE : Config.STRING.WITHDRAW_MESSAGE).replace("{display}", format));
+        p.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(bar));
 
         Runnable task = () ->
         {
             if (pickup.containsKey(u) && pickup.get(u).equals(newAmount))
                 pickup.remove(u);
         };
-        Bukkit.getScheduler().runTaskLater(Coins.getInstance(), task, Settings.get(Config.BOOLEAN.dropEachCoin)? 30L : 10L);
+        Bukkit.getScheduler().runTaskLater(Coins.getInstance(), task, Config.get(Config.BOOLEAN.DROP_EACH_COIN)? 30L : 10L);
 
-        if (amount < 0 && Settings.get(Config.BOOLEAN.coinsEffect))
+        if (amount < 0 && Config.get(Config.BOOLEAN.COINS_EFFECT))
             coinsEffect(p.getEyeLocation(), (int) -amount);
     }
 
@@ -91,7 +91,7 @@ public class CoinsEffect implements Listener
         }
     }
 
-    private static final ItemStack coin = new Coin().item();
+    private static final ItemStack coin = new Coin(0).create();
 
     private static ItemStack getCoin ()
     {
@@ -102,7 +102,7 @@ public class CoinsEffect implements Listener
         return coin;
     }
 
-    private static void coinsEffect (Location location, int amount)
+    static void coinsEffect (Location location, int amount)
     {
         int calculation = amount < 10? amount : (int) Math.log10(amount) * 10;
 

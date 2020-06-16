@@ -20,9 +20,6 @@ public class SkullValue
 {
     // https://github.com/Rocologo/MobHunting
 
-    //  # SKULL: The reward is dropped as a SKULL with a custom texture. You can generate custom texture value
-    //  # and custom texture signature at http://mineskin.org
-
     private static final HashMap<String, ItemStack> coin = new HashMap<>();
 
     public static ItemStack get (String texture)
@@ -33,9 +30,7 @@ public class SkullValue
         if (texture.isEmpty())
             return null;
 
-        ItemStack skull = Settings.get(Config.BOOLEAN.newerServer)? new ItemStack(Material.PLAYER_HEAD)
-                : new ItemStack(Material.matchMaterial("SKULL_ITEM"), 1, (short) 3);
-
+        ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
         SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
 
         GameProfile profile = new GameProfile(UUID.randomUUID(), "randomCoin");

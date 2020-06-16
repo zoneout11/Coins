@@ -1,138 +1,80 @@
 package me.justeli.coins.events;
 
 import me.justeli.coins.Coins;
+import me.justeli.coins.api.Format;
+import me.justeli.coins.item.CheckCoin;
 import me.justeli.coins.settings.Config;
 import me.justeli.coins.settings.Settings;
-import org.bukkit.ChatColor;
-import org.bukkit.Sound;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class CoinsPickup
         implements Listener
 {
-    private final static HashMap<String, Boolean> thrown = new HashMap<>();
+    private final static Set<Integer> thrown = new HashSet<>();
 
     @EventHandler (ignoreCancelled = true)
-    @SuppressWarnings ("deprecation")
-    public void onPickup (PlayerPickupItemEvent e)
+    public void onPickup (PickupEvent e)
     {
-        for (String world : Settings.get(Config.ARRAY.disabledWorlds))
-            if (e.getPlayer().getWorld().getName().equalsIgnoreCase(world))
+        if (Config.get(Config.ARRAY.DISABLED_WORLDS).contains(e.getPlayer().getWorld().getName()))
+            return;
+
+        CheckCoin coin = new CheckCoin(e.getItem().getItemStack());
+
+        if (coin.is())
+        {
+            e.setCancelled(true);
+
+            // if coin is already thrown up then it shouldn't be picked up again
+            if (thrown.contains(e.getItem().getEntityId()))
                 return;
 
-        Item item = e.getItem();
-
-        if (item.getItemStack().getItemMeta() != null && item.getItemStack().getItemMeta().hasDisplayName())
-        {
-            String pickupName = item.getItemStack().getItemMeta().getDisplayName();
-            String coinName = ChatColor.translateAlternateColorCodes('&', Settings.get(Config.STRING.nameOfCoin));
-
-            if (pickupName.equals(coinName))
-            {
-                e.setCancelled(true);
-                Player p = e.getPlayer();
-
-                if (!p.hasPermission("coins.disable") || p.isOp() || p.hasPermission("*"))
-                    giveCoin(item, e.getPlayer(), 0);
-            }
-            else if (pickupName.endsWith(coinName + Settings.get(Config.STRING.multiSuffix)))
-            {
-                e.setCancelled(true);
-                int amount = Integer.parseInt(ChatColor.stripColor(pickupName.split(" ")[0]));
-                if (!e.getPlayer().hasPermission("coins.disable") || e.getPlayer().isOp() || e.getPlayer().hasPermission("*"))
-                    giveCoin(item, e.getPlayer(), item.getItemStack().getAmount() * amount);
-            }
+            Player p = e.getPlayer();
+            if (!p.hasPermission("coins.disable") || p.isOp() || p.hasPermission("*"))
+                giveCoin(e.getItem(), coin, e.getPlayer());
         }
-
     }
 
-    private static void giveCoin (Item item, Player p, long randomMoney)
+    private static void giveCoin (Item item, CheckCoin coin, Player p)
     {
-        ItemMeta meta = item.getItemStack().getItemMeta();
+        thrown.add(item.getEntityId());
+        item.setVelocity(new Vector(0, 0.4, 0));
 
-        if (meta != null && meta.getLore() != null)
-            if (thrown.containsKey(meta.getLore().get(0)))
-                return;
+        giveReward(item.getItemStack().getAmount(), coin, p);
 
-        String random = String.valueOf(Math.random());
-        meta.setLore(Collections.singletonList(random));
-        thrown.put(random, true);
-        item.getItemStack().setItemMeta(meta);
-        item.setVelocity(new Vector(0, 0.3, 0));
+        if (Config.get(Config.BOOLEAN.PICKUP_SOUND))
+        {
+            float volume = Config.get(Config.DOUBLE.SOUND_VOLUME).floatValue();
+            float pitch = Config.get(Config.DOUBLE.SOUND_PITCH).floatValue();
+
+            p.playSound(p.getEyeLocation(), Settings.getSound(), volume == 0? 0.3f : volume, pitch == 0? 0.3f : pitch);
+        }
 
         new BukkitRunnable()
         {
             public void run ()
             {
                 item.remove();
-                thrown.remove(meta.getLore().get(0));
-                if (randomMoney == 0) giveReward(item.getItemStack(), p);
-                else addMoney(p, (double) randomMoney, 0);
-
-                if (Settings.get(Config.BOOLEAN.pickupSound))
-                {
-                    try
-                    {
-                        String sound = Settings.get(Config.STRING.soundName);
-
-                        Sound playSound = Sound.valueOf(Settings.get(Config.BOOLEAN.olderServer) && (sound.equals("BLOCK_LAVA_POP") || sound
-                                .equals("ITEM_ARMOR_EQUIP_GOLD"))? "NOTE_STICKS" : sound.toUpperCase());
-
-                        float volume = Settings.get(Config.DOUBLE.soundVolume).floatValue();
-                        float pitch = Settings.get(Config.DOUBLE.soundPitch).floatValue();
-
-                        p.playSound(p.getEyeLocation(), playSound, volume == 0? 0.3f : volume, pitch == 0? 0.3f : pitch);
-                    }
-                    catch (IllegalArgumentException e)
-                    {
-                        Settings.errorMessage(Settings.Msg.NO_SUCH_SOUND, new String[]{e.getMessage()});
-                    }
-                }
+                thrown.remove(item.getEntityId());
             }
-        }.runTaskLater(Coins.getInstance(), 2);
-
+        }.runTaskLater(Coins.getInstance(), 5);
     }
 
-    public static void giveReward (ItemStack item, Player p)
+    public static void giveReward (int amount, CheckCoin coin, Player p)
     {
-        if (Settings.get(Config.BOOLEAN.dropEachCoin))
-        {
-            addMoney(p, (double) item.getAmount(), 0);
-            return;
-        }
-
-        double second = Settings.get(Config.DOUBLE.moneyAmount_from);
-        double first = Settings.get(Config.DOUBLE.moneyAmount_to) - second;
-
-        int amount = item.getAmount();
-        Double total = amount * (Math.random() * first + second);
-
-        addMoney(p, total, Settings.get(Config.DOUBLE.moneyDecimals).intValue());
+        addMoney(p, amount * coin.worth());
     }
 
-    public static void addMoney (Player p, Double a, int integer)
+    public static void addMoney (Player p, Double amount)
     {
-        final double amount = format(a, integer);
-        Coins.getEconomy().depositPlayer(p, amount);
-    }
-
-    private static Double format (Double amount, int decimals)
-    {
-        try { return Double.parseDouble(String.format("%." + decimals + "f", amount)); }
-        catch (NumberFormatException e)
-        {
-            return Double.parseDouble(String.format("%." + decimals + "f", amount).replace(",", "."));
-        }
+        Coins.getEconomy().depositPlayer(p, Format.number(amount));
     }
 }

@@ -48,22 +48,22 @@ public class CoinsEconomy
     @Override
     public String format (double amount) //todo proper decimals
     {
-        int integer = Settings.get(Config.DOUBLE.moneyDecimals).intValue();
-        return Settings.get(Config.STRING.displayCurrency)
-                .replace("{$}", Settings.get(Config.STRING.currencySymbol))
+        int integer = Config.get(Config.DOUBLE.MONEY_DECIMALS).intValue();
+        return Config.get(Config.STRING.DISPLAY_CURRENCY)
+                .replace("{$}", Config.get(Config.STRING.CURRENCY_SYMBOL))
                 .replace("{amount}", String.format("%,." + integer + "f", amount));
     }
 
     @Override
     public String currencyNamePlural ()
     {
-        return ChatColor.stripColor(Settings.get(Config.STRING.nameOfCoin) + Settings.get(Config.STRING.multiSuffix));
+        return ChatColor.stripColor(Config.get(Config.STRING.NAME_OF_COIN) + Config.get(Config.STRING.MULTI_SUFFIX));
     }
 
     @Override
     public String currencyNameSingular ()
     {
-        return ChatColor.stripColor(Settings.get(Config.STRING.nameOfCoin));
+        return ChatColor.stripColor(Config.get(Config.STRING.NAME_OF_COIN));
     }
 
     @Override
@@ -301,7 +301,7 @@ public class CoinsEconomy
     public boolean createPlayerAccount (OfflinePlayer player)
     {
         CoinStorage.createFile(player.getUniqueId());
-        setBalance(player, Settings.get(Config.DOUBLE.startingBalance));
+        setBalance(player, Config.get(Config.DOUBLE.STARTING_BALANCE));
         return true;
     }
 

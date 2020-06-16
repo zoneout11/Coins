@@ -1,6 +1,8 @@
 package me.justeli.coins.cancel;
 
 import me.justeli.coins.events.CoinsPickup;
+import me.justeli.coins.item.CheckCoin;
+import me.justeli.coins.item.Coin;
 import me.justeli.coins.settings.Config;
 import me.justeli.coins.settings.Settings;
 import org.bukkit.ChatColor;
@@ -12,6 +14,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCreativeEvent;
+import org.bukkit.event.inventory.InventoryPickupItemEvent;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.inventory.ItemStack;
 
 /**
@@ -25,86 +30,87 @@ public class CancelInventories
     public void avoidCraftingTable (CraftItemEvent e)
     {
         for (ItemStack stack : e.getInventory().getContents())
+            if (new CheckCoin(stack).is())
+                e.setCancelled(true);
+    }
+
+    @EventHandler
+    public void on (PrepareAnvilEvent e)
+    {
+        if (e.getResult() != null && new CheckCoin(e.getResult()).is())
+            e.setResult(null);
+    }
+
+    @EventHandler (ignoreCancelled = true)
+    public void itemHopper (InventoryPickupItemEvent e)
+    {
+        if (!e.getInventory().getType().equals(InventoryType.HOPPER))
+            return;
+
+        CheckCoin coin = new CheckCoin(e.getItem().getItemStack());
+        if (!coin.is())
+            return;
+
+        if (Config.get(Config.BOOLEAN.DISABLE_HOPPERS))
         {
-            if (stack != null && stack.getItemMeta() != null && stack.getItemMeta().hasDisplayName())
-            {
-                if (stack.getItemMeta().getDisplayName()
-                        .contains(ChatColor.translateAlternateColorCodes('&', Settings.get(Config.STRING.nameOfCoin))))
-                {
-                    e.setCancelled(true);
-                }
-            }
+            e.setCancelled(true);
+        }
+        else if (coin.isUnique())
+        {
+            e.getItem().setItemStack(new Coin(coin.worth()).create());
         }
     }
 
     @EventHandler (ignoreCancelled = true)
     public void coinInventory (InventoryClickEvent e)
     {
-        for (String world : Settings.get(Config.ARRAY.disabledWorlds))
-            if (e.getWhoClicked().getWorld().getName().equalsIgnoreCase(world))
-                return;
+        if (Config.get(Config.ARRAY.DISABLED_WORLDS).contains(e.getWhoClicked().getWorld().getName()))
+            return;
 
-        if (e.getWhoClicked() instanceof Player)
+        if (!(e.getWhoClicked() instanceof Player))
+            return;
+
+        ItemStack item = e.getCurrentItem();
+        if (item == null)
+            return;
+
+        CheckCoin coin = new CheckCoin(item);
+
+        if (coin.is())
         {
-            ItemStack item = e.getCurrentItem();
-            if (item != null && item.hasItemMeta() && item.getItemMeta() != null && item.getItemMeta().hasDisplayName())
-            {
-                String name = item.getItemMeta().getDisplayName();
-                String configName = ChatColor.translateAlternateColorCodes('&', Settings.get(Config.STRING.nameOfCoin));
-                if (name.equals(configName))
-                {
-                    Player p = (Player) e.getWhoClicked();
-
-                    e.setCancelled(true);
-                    CoinsPickup.giveReward(item, p);
-                    e.getCurrentItem().setAmount(0);
-                }
-            }
-        }
-    }
-    // 2 copies of the one above here for creative inventories
-
-    @EventHandler (ignoreCancelled = true)
-    public void onMiddleClick (InventoryClickEvent e)
-    {
-        for (String world : Settings.get(Config.ARRAY.disabledWorlds))
-            if (e.getWhoClicked().getWorld().getName().equalsIgnoreCase(world))
-                return;
-
-        if (e.getWhoClicked() instanceof Player)
             if (!e.getWhoClicked().hasPermission("coins.creative") && e.getWhoClicked().getGameMode().equals(GameMode.CREATIVE))
+            {
                 removeCreativeCoins(e, e.getCurrentItem());
+                return;
+            }
+
+            Player p = (Player) e.getWhoClicked();
+
+            e.setCancelled(true);
+            CoinsPickup.giveReward(item.getAmount(), coin, p);
+            e.getCurrentItem().setAmount(0);
+        }
     }
 
     @EventHandler (ignoreCancelled = true)
     public void onMiddleClick2 (InventoryCreativeEvent e)
     {
-        for (String world : Settings.get(Config.ARRAY.disabledWorlds))
-            if (e.getWhoClicked().getWorld().getName().equalsIgnoreCase(world))
-                return;
+        if (Config.get(Config.ARRAY.DISABLED_WORLDS).contains(e.getWhoClicked().getWorld().getName()))
+            return;
 
         if (e.getWhoClicked() instanceof Player)
             if (!e.getWhoClicked().hasPermission("coins.creative"))
                 removeCreativeCoins(e, e.getCursor());
-
     }
 
     private void removeCreativeCoins (InventoryClickEvent e, ItemStack item)
     {
-        if (item != null && item.hasItemMeta() && item.getItemMeta() != null && item.getItemMeta().hasDisplayName())
-        {
-            String name = item.getItemMeta().getDisplayName();
-            String configName = ChatColor.translateAlternateColorCodes('&', Settings.get(Config.STRING.nameOfCoin));
-            if (name.contains(configName))
-            {
-                e.setCancelled(true);
+        e.setCancelled(true);
 
-                e.getInventory().remove(item);
-                e.setCurrentItem(new ItemStack(Material.AIR));
+        e.getInventory().remove(item);
+        e.setCurrentItem(new ItemStack(Material.AIR));
 
-                if (e.getClickedInventory() != null)
-                    e.getClickedInventory().remove(item);
-            }
-        }
+        if (e.getClickedInventory() != null)
+            e.getClickedInventory().remove(item);
     }
 }

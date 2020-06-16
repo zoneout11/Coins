@@ -43,7 +43,7 @@ This drops 20 coins in a radius of 3 around the specific player.
 
 You can create a coin, too.
 ```java
-import me.justeli.coins.item.Coin;
+
 ItemStack coin = new Coin().item();                 // gets the ItemStack of one coin
 ItemStack coin = new Coin().stack(false).item();    // creates coin, but not stackable
 ItemStack coin = new Coin().withdraw(100).item();   // makes it a withdrawn coin

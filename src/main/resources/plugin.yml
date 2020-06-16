@@ -4,7 +4,7 @@ version: "${project.version}"
 author: JustEli
 website: "https://www.spigotmc.org/resources/coins.33382/"
 softdepend: [Vault]
-api-version: "1.13"
+api-version: "1.14"
 commands:
   coins:
     aliases: [coin]

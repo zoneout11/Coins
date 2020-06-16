@@ -15,7 +15,7 @@ public class CoinParticles
     public static void dropCoins (Location location, int radius, int amount)
     {
         Location l = location.add(0.0, 0.5, 0.0);
-        ItemStack coin = new Coin().unique().item();
+        ItemStack coin = new Coin(1).unique().create();
         ItemMeta meta = coin.getItemMeta();
 
         for (int i = 0; i < amount; i++)
@@ -42,5 +42,4 @@ public class CoinParticles
             }
         }.runTaskLater(Coins.getInstance(), ticks);
     }
-
 }

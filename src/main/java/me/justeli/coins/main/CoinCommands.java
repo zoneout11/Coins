@@ -1,15 +1,17 @@
 package me.justeli.coins.main;
 
 import me.justeli.coins.Coins;
-import me.justeli.coins.api.ActionBar;
 import me.justeli.coins.api.Complete;
 import me.justeli.coins.api.Extras;
+import me.justeli.coins.api.Format;
+import me.justeli.coins.economy.CoinsAPI;
 import me.justeli.coins.item.Coin;
 import me.justeli.coins.settings.Config;
 import me.justeli.coins.settings.Messages;
 import me.justeli.coins.settings.Settings;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -23,12 +25,14 @@ import org.bukkit.util.Vector;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Cmds
+public class CoinCommands
         implements CommandExecutor
 {
-    private static String color (String message)
+    private final Coins intance;
+
+    public CoinCommands (Coins intance)
     {
-        return ChatColor.translateAlternateColorCodes('&', message);
+        this.intance = intance;
     }
 
     @Override
@@ -47,13 +51,11 @@ public class Cmds
                             Settings.remove();
                             Settings.remove();
                             Extras.resetMultiplier();
-                            boolean success = Settings.enums();
-                            sender.sendMessage(color(Messages.RELOAD_SUCCESS.toString()
-                                    .replace("{0}", Long.toString(System.currentTimeMillis() - ms))));
-                            if (!success)
-                                sender.sendMessage(color(Messages.MINOR_ISSUES.toString()));
-                            else
-                                sender.sendMessage(color(Messages.CHECK_SETTINGS.toString()));
+                            boolean success = intance.getSettings().initConfig();
+                            sender.sendMessage(Messages.RELOAD_SUCCESS.toString().replace("{0}", Long.toString(System.currentTimeMillis() - ms)));
+
+                            if (!success) sender.sendMessage(Messages.MINOR_ISSUES.toString());
+                            else sender.sendMessage(Messages.CHECK_SETTINGS.toString());
                         }
                         else
                             noPerm(sender);
@@ -62,7 +64,7 @@ public class Cmds
                         if (sender.hasPermission("coins.admin"))
                         {
                             String settings = Settings.getSettings();
-                            sender.sendMessage(color(settings));
+                            sender.sendMessage(settings);
                         }
                         else
                             noPerm(sender);
@@ -89,13 +91,13 @@ public class Cmds
                         {
                             String version = Coins.getUpdate();
                             String current = Coins.getInstance().getDescription().getVersion();
-                            sender.sendMessage(color("&eVersion currently installed: &f" + current));
-                            sender.sendMessage(color("&eLatest released version: &f" + version));
+                            sender.sendMessage(Messages.VERSION_CURRENTLY.format(current));
+                            sender.sendMessage(Messages.LATEST_VERSION.format(version));
                             if (version.equals(current))
-                                sender.sendMessage(color("&aYou're up to date with version " + current + "."));
+                                sender.sendMessage(Messages.UP_TO_DATE.format(current));
                             else
                             {
-                                sender.sendMessage(color("&cConsider updating the plugin to version " + version + "!"));
+                                sender.sendMessage(Messages.CONSIDER_UPDATING.format(version));
                                 sender.sendMessage("https://www.spigotmc.org/resources/coins.33382/");
                             }
                         }
@@ -115,7 +117,7 @@ public class Cmds
 
         else if (l.equalsIgnoreCase("withdraw"))
         {
-            if (!Settings.get(Config.BOOLEAN.enableWithdraw))
+            if (!Config.get(Config.BOOLEAN.ENABLE_WITHDRAW))
                 return false;
 
             if (!sender.hasPermission("coins.withdraw") || !(sender instanceof Player))
@@ -124,13 +126,10 @@ public class Cmds
                 return true;
             }
 
-            for (String world : Settings.get(Config.ARRAY.disabledWorlds))
+            if (Config.get(Config.ARRAY.DISABLED_WORLDS).contains(((Player)sender).getWorld().getName()))
             {
-                if (((Player) sender).getWorld().getName().equalsIgnoreCase(world))
-                {
-                    sender.sendMessage(color(Messages.COINS_DISABLED.toString()));
-                    return true;
-                }
+                sender.sendMessage(Messages.COINS_DISABLED.toString());
+                return true;
             }
 
             Player p = (Player) sender;
@@ -142,26 +141,31 @@ public class Cmds
                 try { amount = Integer.parseInt(args[0]); }
                 catch (NumberFormatException e)
                 {
-                    sender.sendMessage(color(Messages.INVALID_AMOUNT.toString()));
+                    sender.sendMessage(Messages.INVALID_AMOUNT.toString());
                     return true;
                 }
 
-                if (amount > 0 && amount <= Settings.get(Config.DOUBLE.maxWithdrawAmount) && Coins.getEconomy().getBalance(p) >= amount)
+                if (amount > 0 && amount <= Config.get(Config.DOUBLE.MAX_WITHDRAW_AMOUNT) && Coins.getEconomy().getBalance(p) >= amount)
                 {
                     if (p.getInventory().firstEmpty() == -1)
                     {
-                        p.sendMessage(color(Messages.INVENTORY_FULL.toString()));
+                        p.sendMessage(Messages.INVENTORY_FULL.toString());
                         return true;
                     }
-                    p.getInventory().addItem(new Coin().withdraw(amount).item());
+                    p.getInventory().addItem(new Coin(amount).withdraw().create());
                     Coins.getEconomy().withdrawPlayer(p, amount);
-                    p.sendMessage(color(Messages.WITHDRAW_COINS.toString().replace("{0}", Long.toString(amount))));
-                    new ActionBar(Settings.get(Config.STRING.withdrawMessage).replace("{%amount}", String.valueOf(amount))
-                            .replace("{$}", Settings.get(Config.STRING.currencySymbol))).send(p);
+                    p.sendMessage(Messages.WITHDRAW_COINS.toString().replace("{0}", Long.toString(amount)));
+
+                    if (!Config.get(Config.BOOLEAN.COINS_ECONOMY))
+                    {
+                        String bar = Format.color(Config.get(Config.STRING.WITHDRAW_MESSAGE).replace("{%amount}", String.valueOf(amount))
+                                .replace("{$}", Config.get(Config.STRING.CURRENCY_SYMBOL)));
+                        p.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(bar));
+                    }
                 }
-                else p.sendMessage(color(Messages.NOT_THAT_MUCH.toString()));
+                else p.sendMessage(Messages.NOT_THAT_MUCH.toString());
             }
-            else p.sendMessage(color(Messages.WITHDRAW_USAGE.toString()));
+            else p.sendMessage(Messages.WITHDRAW_USAGE.toString());
         }
         return false;
     }
@@ -176,7 +180,7 @@ public class Cmds
             try {amount = Integer.parseInt(args[2]); }
             catch (NumberFormatException e)
             {
-                sender.sendMessage(color(Messages.INVALID_NUMBER.toString()));
+                sender.sendMessage(Messages.INVALID_NUMBER.toString());
                 return;
             }
 
@@ -189,7 +193,7 @@ public class Cmds
                 try {radius = Integer.parseInt(args[3]);}
                 catch (NumberFormatException e)
                 {
-                    sender.sendMessage(color(Messages.INVALID_NUMBER.toString()));
+                    sender.sendMessage(Messages.INVALID_NUMBER.toString());
                     return;
                 }
             }
@@ -200,7 +204,7 @@ public class Cmds
             {
                 if (!args[1].contains(","))
                 {
-                    sender.sendMessage(color(Messages.PLAYER_NOT_FOUND.toString()));
+                    sender.sendMessage(Messages.PLAYER_NOT_FOUND.toString());
                     return;
                 }
                 else
@@ -218,7 +222,7 @@ public class Cmds
                     }
                     catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException e)
                     {
-                        sender.sendMessage(color(Messages.COORDS_NOT_FOUND.toString()));
+                        sender.sendMessage(Messages.COORDS_NOT_FOUND.toString());
                         return;
                     }
                 }
@@ -235,35 +239,32 @@ public class Cmds
                 if (p == null)
                     p = (Player) sender;
 
-                for (String world : Settings.get(Config.ARRAY.disabledWorlds))
+                if (Config.get(Config.ARRAY.DISABLED_WORLDS).contains(((Player)sender).getWorld().getName()))
                 {
-                    if (p.getWorld().getName().equalsIgnoreCase(world))
-                    {
-                        sender.sendMessage(color(Messages.COINS_DISABLED.toString()));
-                        return;
-                    }
+                    sender.sendMessage(Messages.COINS_DISABLED.toString());
+                    return;
                 }
             }
 
             if (radius < 1 || radius > 80)
             {
-                sender.sendMessage(color(Messages.INVALID_RADIUS.toString()));
+                sender.sendMessage(Messages.INVALID_RADIUS.toString());
                 return;
             }
 
             if (amount < 1 || amount > 1000)
             {
-                sender.sendMessage(color(Messages.INVALID_AMOUNT.toString()));
+                sender.sendMessage(Messages.INVALID_AMOUNT.toString());
                 return;
             }
 
-            Coins.particles(location, radius, amount);
-            sender.sendMessage(color(Messages.SPAWNED_COINS.toString()).replace("{0}", Long.toString(amount)).replace("{1}", Long.toString(radius))
+            CoinsAPI.particles(location, radius, amount);
+            sender.sendMessage(Messages.SPAWNED_COINS.toString().replace("{0}", Long.toString(amount)).replace("{1}", Long.toString(radius))
                     .replace("{2}", name));
 
         }
         else
-            sender.sendMessage(color(Messages.DROP_USAGE.toString()));
+            sender.sendMessage(Messages.DROP_USAGE.toString());
 
     }
 
@@ -279,12 +280,12 @@ public class Cmds
                 try {r = Integer.parseInt(args[1]);}
                 catch (NumberFormatException e)
                 {
-                    sender.sendMessage(color(Messages.INVALID_RADIUS.toString()));
+                    sender.sendMessage(Messages.INVALID_RADIUS.toString());
                     return;
                 }
                 if (r < 1 || r > 80)
                 {
-                    sender.sendMessage(color(Messages.INVALID_RADIUS.toString()));
+                    sender.sendMessage(Messages.INVALID_RADIUS.toString());
                     return;
                 }
             }
@@ -307,7 +308,7 @@ public class Cmds
                 Item i = (Item) m;
                 if (i.getItemStack().getItemMeta() != null && i.getItemStack().getItemMeta().hasDisplayName())
                 {
-                    if (i.getItemStack().getItemMeta().getDisplayName().equals((color(Settings.get(Config.STRING.nameOfCoin)))))
+                    if (i.getItemStack().getItemMeta().getDisplayName().equals((Config.get(Config.STRING.NAME_OF_COIN))))
                     {
                         amount++;
                         double random = (Math.random() * 3);
@@ -331,7 +332,7 @@ public class Cmds
                 }
             }
         }
-        sender.sendMessage(color(Messages.REMOVED_COINS.toString().replace("{0}", Long.toString(amount))));
+        sender.sendMessage(Messages.REMOVED_COINS.toString().replace("{0}", Long.toString(amount)));
     }
 
     private void sendHelp (CommandSender sender)
@@ -342,27 +343,27 @@ public class Cmds
         if (!update.equals(version))
             notice = " (outdated; /coins update)";
 
-        sender.sendMessage(color(Messages.COINS_HELP.toString() + " " + version + notice));
+        sender.sendMessage(Messages.COINS_HELP.toString() + " " + version + notice);
 
         if (sender.hasPermission("coins.drop"))
-            sender.sendMessage(color(Messages.DROP_USAGE.toString()));
+            sender.sendMessage(Messages.DROP_USAGE.toString());
 
         if (sender.hasPermission("coins.remove"))
-            sender.sendMessage(color(Messages.REMOVE_USAGE.toString()));
+            sender.sendMessage(Messages.REMOVE_USAGE.toString());
 
         if (sender.hasPermission("coins.admin"))
         {
-            sender.sendMessage(color(Messages.SETTINGS_USAGE.toString()));
-            sender.sendMessage(color(Messages.RELOAD_USAGE.toString()));
-            sender.sendMessage(color(Messages.VERSION_CHECK.toString()));
+            sender.sendMessage(Messages.SETTINGS_USAGE.toString());
+            sender.sendMessage(Messages.RELOAD_USAGE.toString());
+            sender.sendMessage(Messages.VERSION_CHECK.toString());
         }
 
-        if (Settings.get(Config.BOOLEAN.enableWithdraw) && sender.hasPermission("coins.withdraw"))
-            sender.sendMessage(color(Messages.WITHDRAW_USAGE.toString()));
+        if (Config.get(Config.BOOLEAN.ENABLE_WITHDRAW) && sender.hasPermission("coins.withdraw"))
+            sender.sendMessage(Messages.WITHDRAW_USAGE.toString());
     }
 
     private void noPerm (CommandSender sender)
     {
-        sender.sendMessage(color(Messages.NO_PERMISSION.toString()));
+        sender.sendMessage(Messages.NO_PERMISSION.toString());
     }
 }

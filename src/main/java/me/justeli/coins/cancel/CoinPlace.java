@@ -1,8 +1,7 @@
 package me.justeli.coins.cancel;
 
 import me.justeli.coins.events.CoinsPickup;
-import me.justeli.coins.settings.Config;
-import me.justeli.coins.settings.Settings;
+import me.justeli.coins.item.CheckCoin;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Container;
 import org.bukkit.entity.Player;
@@ -21,36 +20,28 @@ public class CoinPlace
     @EventHandler
     public void coinPlace (PlayerInteractEvent e)
     {
-        if (!e.getAction().equals(Action.PHYSICAL)
-                && e.getItem() != null
-                && e.getItem().hasItemMeta()
-                && e.getItem().getItemMeta() != null
-                && e.getItem().getItemMeta().hasDisplayName())
+        if (e.getAction().equals(Action.PHYSICAL) || e.getItem() == null)
+            return;
+
+        CheckCoin coin = new CheckCoin(e.getItem());
+        if (!coin.is())
+            return;
+
+        Player p = e.getPlayer();
+        if (!p.hasPermission("coins.withdraw"))
         {
-            Player p = e.getPlayer();
+            e.setCancelled(true);
+            return;
+        }
 
-            String pickupName = e.getItem().getItemMeta().getDisplayName();
-            String coinName = ChatColor.translateAlternateColorCodes('&', Settings.get(Config.STRING.nameOfCoin));
+        if (e.getClickedBlock() == null || !(e.getClickedBlock().getState() instanceof Container))
+        {
+            e.setCancelled(true);
+            int multi = e.getItem().getAmount();
+            e.getItem().setAmount(0);
 
-            if (pickupName.endsWith(coinName + Settings.get(Config.STRING.multiSuffix)))
-            {
-                if (Settings.get(Config.BOOLEAN.olderServer) || !p.hasPermission("coins.withdraw"))
-                {
-                    e.setCancelled(true);
-                    return;
-                }
-
-                if (e.getClickedBlock() == null || !(e.getClickedBlock().getState() instanceof Container))
-                {
-                    e.setCancelled(true);
-                    int multi = e.getItem().getAmount();
-                    e.getItem().setAmount(0);
-
-                    double amount = Integer.parseInt(ChatColor.stripColor(pickupName.split(" ")[0]));
-                    CoinsPickup.addMoney(p, amount * multi, 0);
-                }
-            }
+            double amount = coin.worth();
+            CoinsPickup.addMoney(p, amount * multi);
         }
     }
-
 }

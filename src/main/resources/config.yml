@@ -11,12 +11,13 @@ currencySymbol: "$"
 # You aren't really going to notice this, but in hoppers you can see its name.
 # See a list of all color codes here: http://minecraft.gamepedia.com/Formatting_codes
 # 'multiSuffix's parameter will be added behind 'nameOfCoin' in case it's more than one coin.
+# todo add support for {amount}
 nameOfCoin: "&6Coin"
 multiSuffix: "s"
 
 # What item will the dropped 'coin' (material) be? Find all materials at:
 # https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
-coinItem: coin     # coin = sunflower
+coinItem: sunflower
 
 # Should the coin have an enchanted effect?
 enchantedCoin: false
@@ -37,7 +38,7 @@ withdrawMessage: "&4- &c{display}"
 
 # This plugin will drop one coin, being worth what's set at 'moneyAmount'. But here you can
 # set that a mob should drop 'moneyAmount's AMOUNT of coins, with each coin being worth $1.
-dropEachCoin: false
+dropEachCoin: true
 
 # Also drop coins when the mob is NOT killed by a player?
 # This means that any death cause will cause the mob to drop coins, not just player-cause!
@@ -54,7 +55,7 @@ moneyAmount:
 # How many decimals should money have? Set to 0 for integers/rounded money (i.e. $3 $6 $8).
 # Value 1 (default) means i.e. $2.3 $5.8 $8.0, value of 2 means i.e. $5.23, $3.70, $6.99, etc.
 # This setting will be ignored (and set to 0) if 'dropEachCoin' is set to true.
-moneyDecimals: 1
+moneyDecimals: 2
 
 # Should coins be stacked? (Or should a coin be one on its own?)
 # Stacked coins don't act like one coin. The stack is counted and the worth is multiplied.
@@ -167,6 +168,9 @@ moneyTaken:
 # Should we take the *amount* of money from them, or the *percentage* of their money?
 # Amount from 10 to 30 would be $10 to $30. Percentage from 10 to 30 would be 10% to 30%.
 takePercentage: false
+
+# todo
+preventNegativeBalance: true
 
 # And should the money be dropped, or just disappear? Disappears by default.
 dropOnDeath: false
