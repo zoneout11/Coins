@@ -72,6 +72,7 @@ public class Coins
     // todo generating of coins in dungeons chests
     // todo don't drop/take coins when player has balance below 0
     // todo Coins Protection : true #when coins drop they can only be picked up for a short moment by the one who make them drop.
+    // todo fire BalanceChangeEvent from Essentials if installed
 
     // https://www.spigotmc.org/resources/pickupmoney.11334/
     // chinese site: https://www.mcbbs.net/thread-1051835-1-1.html
@@ -81,6 +82,9 @@ public class Coins
     {
         Locale.setDefault(Locale.US);
         instance = this;
+
+        settings = new Settings(this);
+        settings.initConfig();
 
         if (Bukkit.getVersion().contains("Bukkit"))
         {
@@ -99,9 +103,6 @@ public class Coins
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
-
-        settings = new Settings(this);
-        settings.initConfig();
 
         RegisteredServiceProvider<Economy> provider = getServer().getServicesManager().getRegistration(Economy.class);
         if (Config.get(Config.BOOLEAN.COINS_ECONOMY) || provider == null)

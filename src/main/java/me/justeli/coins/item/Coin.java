@@ -34,10 +34,17 @@ public class Coin
         this.coin = Coins.getInstance().getSettings().getGeneratedCoin().getCoin();
         this.meta = coin.getItemMeta();
 
-        double second = Config.get(Config.DOUBLE.MONEY_AMOUNT__FROM);
-        double first = Config.get(Config.DOUBLE.MONEY_AMOUNT__TO) - second;
+        if (Config.get(Config.BOOLEAN.DROP_EACH_COIN))
+        {
+            this.worth = 1d;
+        }
+        else
+        {
+            double second = Config.get(Config.DOUBLE.MONEY_AMOUNT__FROM);
+            double first = Config.get(Config.DOUBLE.MONEY_AMOUNT__TO) - second;
 
-        this.worth = Math.random() * first + second;
+            this.worth = Math.random() * first + second;
+        }
     }
 
     public Coin setFor (Player p)

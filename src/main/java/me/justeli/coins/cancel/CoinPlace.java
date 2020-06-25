@@ -2,7 +2,6 @@ package me.justeli.coins.cancel;
 
 import me.justeli.coins.events.CoinsPickup;
 import me.justeli.coins.item.CheckCoin;
-import org.bukkit.ChatColor;
 import org.bukkit.block.Container;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

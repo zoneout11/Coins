@@ -86,6 +86,7 @@ public class Config
         COINS_EFFECT(true),
         TRACK_ECONOMY(false),
         ENCHANTED_COIN(false),
+        PICKUP_EFFECT(false),
         ;
 
         private final String key;
@@ -154,6 +155,7 @@ public class Config
         SOUND_PITCH(0.3d),
         SOUND_VOLUME(0.5d),
         LIMIT_FOR_LOCATION(1d),
+        DONT_LOSE_BELOW(0d),
         PERCENTAGE_PLAYER_HIT(0.9d),
         STARTING_BALANCE(100d),
         MAXIMUM_ALLOWED(1000000000000d),

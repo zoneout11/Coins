@@ -63,17 +63,25 @@ public class DropCoin
                     || ((m instanceof Animals || m instanceof Squid || m instanceof Snowman || m instanceof IronGolem
                     || m instanceof Villager || m instanceof Ambient) && Config.get(Config.BOOLEAN.PASSIVE_DROP))
                     || (m instanceof Player && Config.get(Config.BOOLEAN.PLAYER_DROP) && Coins.getEconomy().getBalance((Player) m) >= 0))
-            { dropMobCoin(m, e.getEntity().getKiller()); }
+            {
+                dropMobCoin(m, e.getEntity().getKiller());
+            }
         }
         else if (Config.get(Config.BOOLEAN.DROP_WITH_ANY_DEATH))
+        {
             dropMobCoin(m, null);
+        }
 
         if (m instanceof Player && Config.get(Config.BOOLEAN.LOSE_ON_DEATH))
         {
+            Player p = (Player) e.getEntity();
+
+            if (Coins.getEconomy().getBalance(p) < Config.get(Config.DOUBLE.DONT_LOSE_BELOW))
+                return;
+
             double second = Config.get(Config.DOUBLE.MONEY_TAKEN__FROM);
             double first = Config.get(Config.DOUBLE.MONEY_TAKEN__TO) - second;
 
-            Player p = (Player) e.getEntity();
             double random = Math.random() * first + second;
             double take = Config.get(Config.BOOLEAN.TAKE_PERCENTAGE)? (random / 100) * Coins.getEconomy().getBalance(p) : random;
 
@@ -83,7 +91,9 @@ public class DropCoin
                         .replace("{$}", Config.get(Config.STRING.CURRENCY_SYMBOL))), 20, 100, 20);
 
                 if (Config.get(Config.BOOLEAN.DROP_ON_DEATH) && p.getLocation().getWorld() != null)
+                {
                     p.getWorld().dropItem(p.getLocation(), new Coin(take).create());
+                }
             }
         }
     }

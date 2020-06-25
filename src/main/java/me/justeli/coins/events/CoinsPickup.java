@@ -21,7 +21,7 @@ public class CoinsPickup
 {
     private final static Set<Integer> thrown = new HashSet<>();
 
-    @EventHandler (ignoreCancelled = true)
+    @EventHandler
     public void onPickup (PickupEvent e)
     {
         if (Config.get(Config.ARRAY.DISABLED_WORLDS).contains(e.getPlayer().getWorld().getName()))

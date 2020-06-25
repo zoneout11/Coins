@@ -236,9 +236,6 @@ public class CoinCommands
 
             if (p != null || sender instanceof Player)
             {
-                if (p == null)
-                    p = (Player) sender;
-
                 if (Config.get(Config.ARRAY.DISABLED_WORLDS).contains(((Player)sender).getWorld().getName()))
                 {
                     sender.sendMessage(Messages.COINS_DISABLED.toString());
@@ -259,8 +256,7 @@ public class CoinCommands
             }
 
             CoinsAPI.particles(location, radius, amount);
-            sender.sendMessage(Messages.SPAWNED_COINS.toString().replace("{0}", Long.toString(amount)).replace("{1}", Long.toString(radius))
-                    .replace("{2}", name));
+            sender.sendMessage(Messages.SPAWNED_COINS.toString().replace("{0}", Long.toString(amount)).replace("{1}", Long.toString(radius)).replace("{2}", name));
 
         }
         else
