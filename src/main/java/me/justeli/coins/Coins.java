@@ -13,8 +13,7 @@ import me.justeli.coins.events.BukkitEvents;
 import me.justeli.coins.events.CoinsPickup;
 import me.justeli.coins.events.DropCoin;
 import me.justeli.coins.events.PaperEvents;
-import me.justeli.coins.main.CoinCommands;
-import me.justeli.coins.main.TabComplete;
+import me.justeli.coins.commands.CoinCommands;
 import me.justeli.coins.settings.Config;
 import me.justeli.coins.settings.Messages;
 import me.justeli.coins.settings.Settings;
@@ -64,7 +63,6 @@ public class Coins
     // todo host on a maven repository
     // https://help.github.com/en/packages/using-github-packages-with-your-projects-ecosystem/configuring-apache-maven-for-use-with-github-packages
     // todo proper formatting before saving to disk i.e.  %.2f
-    // todo extending the /withdraw command to /witdraw [amount to withdraw] [how many times] so "/withdraw 5 64" would give me a stack of 5coin sunflowers
     // todo add option to not let balance go negative (with dropOnDeath: true)
     // todo coin and/or bill textures using NBT data and a resource pack
     // todo Can you add config for specific blocks for mining?
@@ -73,6 +71,18 @@ public class Coins
     // todo don't drop/take coins when player has balance below 0
     // todo Coins Protection : true #when coins drop they can only be picked up for a short moment by the one who make them drop.
     // todo fire BalanceChangeEvent from Essentials if installed
+
+    // todo Able to set multiple denominations of coin worth to something other than $1ea. (IE: $1 = skull 1 | $5 = skull 2 | $10 = skull 3....etc)
+    // todo Able to remove auto-deposit, Introduce /deposit option instead of right-click
+    // todo Give command (IE: /coin give Dingo 5 64) puts a $5 stack of coins in Dingo's inventory.
+    // todo WorldGuard integration: Do mobs/mob spawners in this area drop coins
+    // todo Ability to broadcast coin drop with a timer/countdown
+    // todo Able to set "limit for location timer" yourself
+    // todo Keep inventory coins with death option
+    // todo Coin From-To drop setting available for every mob individually
+    // todo https://mythicmobs.net/javadocs/
+    // todo option to disallow mobs from picking up coins
+    // todo from 1.x: add meta.setCustomModelData(configOption);
 
     // https://www.spigotmc.org/resources/pickupmoney.11334/
     // chinese site: https://www.mcbbs.net/thread-1051835-1-1.html

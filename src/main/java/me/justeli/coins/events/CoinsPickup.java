@@ -29,6 +29,12 @@ public class CoinsPickup
 
         CheckCoin coin = new CheckCoin(e.getItem().getItemStack());
 
+        if (!coin.isFor(e.getPlayer()))
+        {
+            e.setCancelled(true);
+            return;
+        }
+
         if (coin.is())
         {
             e.setCancelled(true);

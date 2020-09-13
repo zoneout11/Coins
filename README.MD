@@ -24,7 +24,7 @@ Coins has three parts in the plugin usable for outside developers. The classes: 
 
 You can drop coins in a radius around someone.
 ```java
-import me.justeli.coins.main.Coins;
+import me.justeli.coins.commands.Coins;
 Coins.particles (Location location, int radius, int amount);
 ```
 
@@ -51,7 +51,7 @@ ItemStack coin = new Coin().withdraw(100).item();   // makes it a withdrawn coin
 
 When 'spawnerDrop' is set to false (default), you can check if a mob is spawned by a spawner. Since every mob from a spawner has a hashmap (if 'spawnerDrop' is set to false).
 ```java
-import me.justeli.coins.main.Coins;
+import me.justeli.coins.commands.Coins;
 boolean mobFromSpawner = Coins.mobFromSpawner (Entity entity);
 ```
 Returns true if the Entity is from a spawner, false if not.

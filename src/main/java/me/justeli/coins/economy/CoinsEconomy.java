@@ -133,7 +133,7 @@ public class CoinsEconomy
     @Override
     public boolean has (OfflinePlayer player, double amount)
     {
-        return getBalance(player) >= amount;
+        return amount > 0 && getBalance(player) >= amount;
     }
 
     @Override
@@ -322,21 +322,21 @@ public class CoinsEconomy
     public void setBalance (OfflinePlayer player, double amount)
     {
         double balance = getBalance(player);
-        if (!(amount == balance))
-        {
-            double transaction = amount - balance;
-            BalanceChangeEvent event = new BalanceChangeEvent(player, amount, balance, transaction);
-            Bukkit.getServer().getPluginManager().callEvent(event);
+        if (amount == balance)
+            return;
 
-            if (!event.isCancelled())
-            {
-                CoinStorage.setStorage(player.getUniqueId(), "balance", amount);
-                if (!player.isOnline())
-                {
-                    double offline = CoinStorage.getStorage(player.getUniqueId()).getDouble("offlineBalance");
-                    CoinStorage.setStorage(player.getUniqueId(), "offlineBalance", offline + transaction);
-                }
-            }
+        double transaction = amount - balance;
+        BalanceChangeEvent event = new BalanceChangeEvent(player, amount, balance, transaction);
+        Bukkit.getServer().getPluginManager().callEvent(event);
+
+        if (event.isCancelled())
+            return;
+
+        CoinStorage.setStorage(player.getUniqueId(), "balance", amount);
+        if (!player.isOnline())
+        {
+            double offline = CoinStorage.getStorage(player.getUniqueId()).getDouble("offlineBalance");
+            CoinStorage.setStorage(player.getUniqueId(), "offlineBalance", offline + transaction);
         }
     }
 }

@@ -18,8 +18,10 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.projectiles.ProjectileSource;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -57,14 +59,15 @@ public class DropCoin
         if (hitSetting > 0 && maxHealth != null && getPlayerDamage(m.getUniqueId())/maxHealth.getValue() < hitSetting)
             return;
 
-        if (e.getEntity().getKiller() != null)
+        Player killer = getKiller(e.getEntity());
+        if (killer != null)
         {
             if ((m instanceof Monster || m instanceof Slime || m instanceof Ghast || m instanceof EnderDragon || m instanceof Shulker || m instanceof Phantom)
                     || ((m instanceof Animals || m instanceof Squid || m instanceof Snowman || m instanceof IronGolem
                     || m instanceof Villager || m instanceof Ambient) && Config.get(Config.BOOLEAN.PASSIVE_DROP))
                     || (m instanceof Player && Config.get(Config.BOOLEAN.PLAYER_DROP) && Coins.getEconomy().getBalance((Player) m) >= 0))
             {
-                dropMobCoin(m, e.getEntity().getKiller());
+                dropMobCoin(m, killer);
             }
         }
         else if (Config.get(Config.BOOLEAN.DROP_WITH_ANY_DEATH))
@@ -87,7 +90,7 @@ public class DropCoin
 
             if (take > 0 && Coins.getEconomy().withdrawPlayer(p, (long) take).transactionSuccess())
             {
-                p.sendTitle("", color(Config.get(Config.STRING.WITHDRAW_MESSAGE).replace("{amount}", String.valueOf((long) take))
+                p.sendTitle("", color(Config.get(Config.STRING.WITHDRAW_MESSAGE).replace("{display}", Coins.getEconomy().format(take))
                         .replace("{$}", Config.get(Config.STRING.CURRENCY_SYMBOL))), 20, 100, 20);
 
                 if (Config.get(Config.BOOLEAN.DROP_ON_DEATH) && p.getLocation().getWorld() != null)
@@ -96,6 +99,24 @@ public class DropCoin
                 }
             }
         }
+    }
+
+    //todo doesn't work
+    private Player getKiller (LivingEntity entity)
+    {
+        if (entity == null)
+            return null;
+
+        if (entity.getKiller() instanceof Projectile)
+        {
+            ProjectileSource killer = ((Projectile) entity.getKiller()).getShooter();
+            if (killer instanceof Player)
+            {
+                return (Player) killer;
+            }
+        }
+
+        return entity.getKiller();
     }
 
     private String color (String color)

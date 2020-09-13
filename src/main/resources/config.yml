@@ -1,6 +1,15 @@
-# # # # # # # # # # # # # # # #
-#   Configuration for Coins   #
-# # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # #
+#   _____      _            #
+#  / ____|    (_)           #
+# | |     ___  _ _ __  ___  #
+# | |    / _ \| | '_ \/ __| #
+# | |___| (_) | | | | \__ \ #
+#  \_____\___/|_|_| |_|___/ #
+#                           #
+#      Version 2 by JustEli #
+# # # # # # # # # # # # # # #
+# https://www.kammerl.de/ascii/AsciiSignature.php
+
 
 # What language should the plugin use? And what is your server's currency?
 # All available languages can be found in folder 'languages' in the plugin folder.
@@ -14,6 +23,10 @@ currencySymbol: "$"
 # todo add support for {amount}
 nameOfCoin: "&6Coin"
 multiSuffix: "s"
+
+# coin.singleName: Coin
+# coin.pluralName: Coins
+# coin.nameColor: GOLD , can also be #123456  1.16+
 
 # What item will the dropped 'coin' (material) be? Find all materials at:
 # https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html

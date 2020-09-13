@@ -17,6 +17,7 @@ import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.inventory.PrepareAnvilEvent;
+import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.inventory.ItemStack;
 
 /**
@@ -30,8 +31,26 @@ public class CancelInventories
     public void avoidCraftingTable (CraftItemEvent e)
     {
         for (ItemStack stack : e.getInventory().getContents())
+        {
             if (new CheckCoin(stack).is())
+            {
                 e.setCancelled(true);
+                break;
+            }
+        }
+    }
+
+    @EventHandler
+    public void on (PrepareItemCraftEvent e)
+    {
+        for (ItemStack stack : e.getInventory().getContents())
+        {
+            if (new CheckCoin(stack).is())
+            {
+                e.getInventory().setResult(null);
+                break;
+            }
+        }
     }
 
     @EventHandler
@@ -48,7 +67,7 @@ public class CancelInventories
             return;
 
         CheckCoin coin = new CheckCoin(e.getItem().getItemStack());
-        if (!coin.is())
+        if (!coin.is() || coin.withdrawed())
             return;
 
         if (Config.get(Config.BOOLEAN.DISABLE_HOPPERS))
@@ -75,42 +94,13 @@ public class CancelInventories
             return;
 
         CheckCoin coin = new CheckCoin(item);
-
-        if (coin.is())
-        {
-            if (!e.getWhoClicked().hasPermission("coins.creative") && e.getWhoClicked().getGameMode().equals(GameMode.CREATIVE))
-            {
-                removeCreativeCoins(e, e.getCurrentItem());
-                return;
-            }
-
-            Player p = (Player) e.getWhoClicked();
-
-            e.setCancelled(true);
-            CoinsPickup.giveReward(item.getAmount(), coin, p);
-            e.getCurrentItem().setAmount(0);
-        }
-    }
-
-    @EventHandler (ignoreCancelled = true)
-    public void onMiddleClick2 (InventoryCreativeEvent e)
-    {
-        if (Config.get(Config.ARRAY.DISABLED_WORLDS).contains(e.getWhoClicked().getWorld().getName()))
+        if (!coin.is() || coin.withdrawed())
             return;
 
-        if (e.getWhoClicked() instanceof Player)
-            if (!e.getWhoClicked().hasPermission("coins.creative"))
-                removeCreativeCoins(e, e.getCursor());
-    }
+        Player p = (Player) e.getWhoClicked();
 
-    private void removeCreativeCoins (InventoryClickEvent e, ItemStack item)
-    {
         e.setCancelled(true);
-
-        e.getInventory().remove(item);
-        e.setCurrentItem(new ItemStack(Material.AIR));
-
-        if (e.getClickedInventory() != null)
-            e.getClickedInventory().remove(item);
+        CoinsPickup.giveReward(item.getAmount(), coin, p);
+        e.getCurrentItem().setAmount(0);
     }
 }

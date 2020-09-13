@@ -74,7 +74,8 @@ public class Coin
 
     public Coin withdraw ()
     {
-        setName("&e" + worth + " " + Config.get(Config.STRING.NAME_OF_COIN) + Config.get(Config.STRING.MULTI_SUFFIX));
+        setName("&e" + worth.longValue() + " " + Config.get(Config.STRING.NAME_OF_COIN) + Config.get(Config.STRING.MULTI_SUFFIX));
+        setTag("withdraw", "true");
         return this;
     }
 

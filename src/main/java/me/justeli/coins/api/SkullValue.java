@@ -20,6 +20,7 @@ public class SkullValue
 {
     // https://github.com/Rocologo/MobHunting
 
+    //todo needs testing
     private static final HashMap<String, ItemStack> coin = new HashMap<>();
 
     public static ItemStack get (String texture)
@@ -33,35 +34,27 @@ public class SkullValue
         ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
         SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
 
+        if (skullMeta == null)
+            return skull;
+
         GameProfile profile = new GameProfile(UUID.randomUUID(), "randomCoin");
         profile.getProperties().put("textures", new Property("textures", texture));
 
-        Field profileField;
-
         try
         {
-            profileField = skullMeta.getClass().getDeclaredField("profile");
+            Field profileField = skullMeta.getClass().getDeclaredField("profile");
+            profileField.setAccessible(true);
+            profileField.set(skullMeta, profile);
+
+            skull.setItemMeta(skullMeta);
+            coin.put(texture, skull);
+
+            return skull;
         }
-        catch (NoSuchFieldException | SecurityException | NullPointerException e)
+        catch (NoSuchFieldException | SecurityException | NullPointerException | IllegalArgumentException | IllegalAccessException e)
         {
             e.printStackTrace();
             return skull;
         }
-
-        profileField.setAccessible(true);
-
-        try
-        {
-            profileField.set(skullMeta, profile);
-        }
-        catch (IllegalArgumentException | IllegalAccessException e)
-        {
-            e.printStackTrace();
-        }
-
-        skull.setItemMeta(skullMeta);
-
-        coin.put(texture, skull);
-        return skull;
     }
 }

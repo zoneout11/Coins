@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Created by Eli on May 17, 2020.
@@ -23,14 +24,19 @@ import java.util.concurrent.Executors;
 public class CoinStorage
 {
     private static final HashMap<UUID, FileConfiguration> playerData = new HashMap<>();
+    private static final AtomicReference<FileConfiguration> serverConfig = new AtomicReference<>();
 
     public static void initPlayerData ()
     {
         File data = getPluginFile(Coins.getInstance(), "data");
-        if (!data.exists()) data.mkdir();
+        if (!data.exists() && data.mkdir())
+            System.out.println("Created data folder for Coins.");
 
         File folder = getPluginFile(Coins.getInstance(), "data/players");
-        if (!folder.exists()) folder.mkdir();
+        if (!folder.exists() && folder.mkdir())
+            System.out.println("Created player data folder for Coins.");
+
+        initServerData();
 
         File[] files = folder.listFiles();
         if (files == null)
@@ -41,6 +47,37 @@ public class CoinStorage
             UUID uuid = UUID.fromString(uuidFile.getName().replace(".yml", ""));
             playerData.put(uuid, getFileConfiguration(Coins.getInstance(), String.format("data/players/%s.yml", uuid.toString())));
         }
+    }
+
+    public static void initServerData ()
+    {
+        File data = getPluginFile(Coins.getInstance(), "data/server.yml");
+
+        try
+        {
+            if (!data.exists() && data.createNewFile())
+                System.out.println("Created server data file for Coins.");
+        }
+        catch (IOException ex)
+        {
+            ex.printStackTrace();
+        }
+
+        serverConfig.set(getFileConfiguration(Coins.getInstance(), "data/server.yml"));
+    }
+
+    public static FileConfiguration getCachedServerData ()
+    {
+        return serverConfig.get();
+    }
+
+    public static void setServerData (String key, Object value)
+    {
+        FileConfiguration config = getCachedServerData();
+        config.set(key, value);
+
+        serverConfig.set(config);
+        saveFile(config, getPluginFile(Coins.getInstance(), "data/server.yml"));
     }
 
     static FileConfiguration getStorage (UUID uuid)

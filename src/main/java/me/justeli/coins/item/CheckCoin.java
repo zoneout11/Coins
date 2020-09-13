@@ -33,7 +33,13 @@ public class CheckCoin
 
     public boolean isFor (Player p)
     {
-        return p.getName().equals(getTagString("player"));
+        String value = getTagString("player");
+        return value == null || p.getName().equals(value);
+    }
+
+    public boolean withdrawed ()
+    {
+        return getTagString("withdraw") != null;
     }
 
     public boolean isUnique ()

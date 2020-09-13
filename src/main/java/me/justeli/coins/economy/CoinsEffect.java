@@ -58,9 +58,11 @@ public class CoinsEffect implements Listener
         if (amount == 0)
             return;
 
-        final UUID u = p.getUniqueId();
-        pickup.put(u, amount + (pickup.containsKey(u)? pickup.get(u) : 0));
-        final Double newAmount = pickup.get(u);
+        CoinStorage.setServerData("inCirculation", CoinStorage.getCachedServerData().getDouble("inCirculation") + amount);
+
+        final UUID uuid = p.getUniqueId();
+        pickup.put(uuid, amount + (pickup.containsKey(uuid)? pickup.get(uuid) : 0));
+        final Double newAmount = pickup.get(uuid);
 
         String format = Coins.getEconomy().format(Math.abs(newAmount));
         String bar = Format.color(Config.get(amount > 0? Config.STRING.DEPOSIT_MESSAGE : Config.STRING.WITHDRAW_MESSAGE).replace("{display}", format));
@@ -68,8 +70,8 @@ public class CoinsEffect implements Listener
 
         Runnable task = () ->
         {
-            if (pickup.containsKey(u) && pickup.get(u).equals(newAmount))
-                pickup.remove(u);
+            if (pickup.containsKey(uuid) && pickup.get(uuid).equals(newAmount))
+                pickup.remove(uuid);
         };
         Bukkit.getScheduler().runTaskLater(Coins.getInstance(), task, Config.get(Config.BOOLEAN.DROP_EACH_COIN)? 30L : 10L);
 

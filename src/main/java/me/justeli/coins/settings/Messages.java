@@ -19,7 +19,7 @@ public enum Messages
     INVALID_AMOUNT ("&cThat is an invalid amount."),
     WITHDRAW_COINS ("&eYou withdrawn &f{$}{0} &eand received &f{0} coins&e for it."),
     NOT_THAT_MUCH ("&cYou are not allowed to withdraw that much."),
-    WITHDRAW_USAGE ("&c/withdraw <coins> &7- withdraw some money into coins"),
+    WITHDRAW_USAGE ("&c/withdraw <coins> [amount] &7- withdraw some money into coins"),
     INVALID_NUMBER ("&cThat is an invalid number."),
     PLAYER_NOT_FOUND ("&4That player could not be found."),
     COORDS_NOT_FOUND ("&4Those coords or the world couldn't be found."),

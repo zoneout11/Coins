@@ -5,10 +5,4 @@ author: JustEli
 website: "https://www.spigotmc.org/resources/coins.33382/"
 softdepend: [Vault]
 api-version: "1.14"
-commands:
-  coins:
-    aliases: [coin]
-    usage: "/coins <parameters>"
-  withdraw:
-    usage: "/withdraw <coins>"
 load: STARTUP
