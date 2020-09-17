@@ -1,6 +1,5 @@
 package me.justeli.coins.item;
 
-import me.justeli.coins.Coins;
 import me.justeli.coins.api.Format;
 import me.justeli.coins.api.SkullValue;
 import me.justeli.coins.settings.Config;
@@ -20,7 +19,7 @@ public class GeneratedCoin
     public void init ()
     {
         String texture = Config.get(Config.STRING.SKULL_TEXTURE);
-        String material = Config.get(Config.STRING.COIN_ITEM).toUpperCase();
+        String material = Config.get(Config.STRING.COIN_ITEM).replace(" ", "_").toUpperCase();
 
         coin = texture == null || texture.isEmpty()? new ItemStack(Material.valueOf(material)) : SkullValue.get(texture);
 
@@ -34,7 +33,17 @@ public class GeneratedCoin
         if (meta != null)
         {
             meta.setDisplayName(Format.color(Config.get(Config.STRING.NAME_OF_COIN)));
-            if (Config.get(Config.BOOLEAN.ENCHANTED_COIN)) meta.addEnchant(Enchantment.DURABILITY, 1, true);
+
+            if (Config.get(Config.BOOLEAN.ENCHANTED_COIN))
+            {
+                meta.addEnchant(Enchantment.DURABILITY, 1, true);
+            }
+
+            int data = Config.get(Config.DOUBLE.CUSTOM_MODEL_DATA).intValue();
+            if (data > 0)
+            {
+                meta.setCustomModelData(data);
+            }
         }
 
         this.coin.setItemMeta(meta);

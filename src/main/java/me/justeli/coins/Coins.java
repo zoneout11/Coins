@@ -3,13 +3,17 @@ package me.justeli.coins;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import me.justeli.api.shaded.commands.DynamicCommandRegistry;
+import me.justeli.api.shaded.tabcompletion.CompletionRegistry;
 import me.justeli.coins.cancel.CancelInventories;
 import me.justeli.coins.cancel.CoinPlace;
 import me.justeli.coins.cancel.PreventSpawner;
+import me.justeli.coins.commands.WithdrawCommand;
 import me.justeli.coins.economy.CoinStorage;
 import me.justeli.coins.economy.CoinsEconomy;
 import me.justeli.coins.economy.CoinsEffect;
 import me.justeli.coins.events.BukkitEvents;
+import me.justeli.coins.events.CoinTexture;
 import me.justeli.coins.events.CoinsPickup;
 import me.justeli.coins.events.DropCoin;
 import me.justeli.coins.events.PaperEvents;
@@ -127,7 +131,8 @@ public class Coins
         economy = provider.getProvider();
 
         registerCommands();
-        registerEvents(new PreventSpawner(), new CoinsPickup(), new DropCoin(), new CoinPlace(), new CancelInventories(), new CoinsEffect());
+        registerEvents(new PreventSpawner(), new CoinsPickup(), new DropCoin(), new CoinPlace(), new CancelInventories(),
+                new CoinsEffect(), new CoinTexture());
 
         checkVersion();
         addMetrics();
@@ -215,17 +220,31 @@ public class Coins
         return coinCommands;
     }
 
+    public WithdrawCommand withdrawCommand;
+
+    public WithdrawCommand getWithdrawCommand ()
+    {
+        return withdrawCommand;
+    }
+
+    protected DynamicCommandRegistry commands;
+    protected CompletionRegistry completions;
+
     private void registerCommands ()
     {
         coinCommands = new CoinCommands(this);
+        withdrawCommand = new WithdrawCommand(this);
 
-        getCommand("coins").setExecutor(coinCommands);
-        getCommand("coins").setTabCompleter(new TabComplete());
+        commands = new DynamicCommandRegistry(this);
+        completions = new CompletionRegistry(this);
+
+        commands.register(coinCommands);
+        completions.register(coinCommands);
 
         if (Config.get(Config.BOOLEAN.ENABLE_WITHDRAW))
         {
-            getCommand("withdraw").setExecutor(coinCommands);
-            getCommand("withdraw").setTabCompleter(new TabComplete());
+            commands.register(withdrawCommand);
+            completions.register(withdrawCommand);
         }
     }
 

@@ -25,6 +25,13 @@ import java.util.List;
  */
 public class WithdrawCommand implements Commander, Completer
 {
+    public final Coins instance;
+
+    public WithdrawCommand (Coins instance)
+    {
+        this.instance = instance;
+    }
+
     @Command (permission = "coins.withdraw")
     public boolean withdraw (Player player, String[] args)
     {

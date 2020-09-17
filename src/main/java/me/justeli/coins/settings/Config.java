@@ -159,6 +159,7 @@ public class Config
         PERCENTAGE_PLAYER_HIT(0.9d),
         STARTING_BALANCE(100d),
         MAXIMUM_ALLOWED(1000000000000d),
+        CUSTOM_MODEL_DATA(0d),
         ;
 
         private final String key;

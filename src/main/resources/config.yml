@@ -165,6 +165,9 @@ experienceBlocks:
   SPAWNER: 1.0
 # ^^^^^^^ but what if player places block again and breaks again
 
+
+customModelData: 1
+
 # # # # # # # # # #
 # Death Settings  #
 # # # # # # # # # #

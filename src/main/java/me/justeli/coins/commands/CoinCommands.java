@@ -81,8 +81,8 @@ public class CoinCommands
                         noPerm(sender);
                     break;
                 case "give":
-                    if (sender.hasPermission("coins.give"))
-                        giveCoins (sender, args);
+                    if (sender.hasPermission("coins.give")) {}
+                        //giveCoins (sender, args);
                     else
                         noPerm(sender);
                     break;
@@ -127,7 +127,7 @@ public class CoinCommands
 
     @Completion (commands = {"coin", "coins"})
     public List<String> completion (CommandSender sender)
-    {
+    {/*
         List<String> list = new ArrayList<>();
         if (args.length == 1)
         {
@@ -167,7 +167,8 @@ public class CoinCommands
         }
 
         Collections.sort(list);
-        return list;
+        return list;*/
+        return new ArrayList<>();
     }
 
     private void dropCoins (CommandSender sender, String[] args)
@@ -350,7 +351,9 @@ public class CoinCommands
             sender.sendMessage(Messages.REMOVE_USAGE.toString());
 
         if (sender.hasPermission("coins.give"))
-            sender.sendMessage(Messages.GIVE_USAGE.toString());
+        {
+            //sender.sendMessage(Messages.GIVE_USAGE.toString());
+        }
 
         if (sender.hasPermission("coins.admin"))
         {
