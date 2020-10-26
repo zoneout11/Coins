@@ -1,5 +1,6 @@
 package me.justeli.coins.economy;
 
+import me.justeli.coins.Coins;
 import me.justeli.coins.cancel.PreventSpawner;
 import me.justeli.coins.item.CoinParticles;
 import org.bukkit.Location;
@@ -13,15 +14,22 @@ import java.util.UUID;
  */
 public class CoinsAPI
 {
+    private static final Coins instance;
+
+    static
+    {
+        instance = Coins.getInstance();
+    }
+
     // setBalance
     public static double receivedWhileOffline (UUID uuid)
     {
-        return CoinStorage.getStorage(uuid).getDouble("offlineBalance");
+        return instance.getCoinStorage().getStorage(uuid).getDouble("offlineBalance");
     }
 
     public static void playEffect (Location location, int amount)
     {
-        CoinsEffect.coinsEffect(location, amount);
+        instance.getCoinsEffect().coinsEffect(location, amount);
     }
 
     public static boolean mobFromSpawner (Entity entity)
@@ -29,8 +37,8 @@ public class CoinsAPI
         return PreventSpawner.fromSpawner(entity);
     }
 
-    public static void particles (Location location, int radius, int amount)
+    public static void particles (Location location, double radius, int amount)
     {
-        CoinParticles.dropCoins(location, radius, amount);
+        instance.getCoinParticles().dropCoins(location, radius, amount);
     }
 }

@@ -1,10 +1,19 @@
 package me.justeli.coins;
 
+import cloud.commandframework.CommandTree;
+import cloud.commandframework.annotations.AnnotationParser;
+import cloud.commandframework.arguments.parser.ParserParameters;
+import cloud.commandframework.arguments.parser.StandardParameters;
+import cloud.commandframework.bukkit.BukkitCommandManager;
+import cloud.commandframework.bukkit.BukkitCommandMetaBuilder;
+import cloud.commandframework.bukkit.CloudBukkitCapabilities;
+import cloud.commandframework.execution.AsynchronousCommandExecutionCoordinator;
+import cloud.commandframework.execution.CommandExecutionCoordinator;
+import cloud.commandframework.meta.CommandMeta;
+import cloud.commandframework.paper.PaperCommandManager;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import me.justeli.api.shaded.commands.DynamicCommandRegistry;
-import me.justeli.api.shaded.tabcompletion.CompletionRegistry;
 import me.justeli.coins.cancel.CancelInventories;
 import me.justeli.coins.cancel.CoinPlace;
 import me.justeli.coins.cancel.PreventSpawner;
@@ -13,11 +22,11 @@ import me.justeli.coins.economy.CoinStorage;
 import me.justeli.coins.economy.CoinsEconomy;
 import me.justeli.coins.economy.CoinsEffect;
 import me.justeli.coins.events.BukkitEvents;
-import me.justeli.coins.events.CoinTexture;
 import me.justeli.coins.events.CoinsPickup;
 import me.justeli.coins.events.DropCoin;
 import me.justeli.coins.events.PaperEvents;
 import me.justeli.coins.commands.CoinCommands;
+import me.justeli.coins.item.CoinParticles;
 import me.justeli.coins.settings.Config;
 import me.justeli.coins.settings.Messages;
 import me.justeli.coins.settings.Settings;
@@ -25,6 +34,7 @@ import net.milkbowl.vault.economy.Economy;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -38,16 +48,23 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 /**
  * Created by Eli on 12/13/2016.
+ * Rewritten by Eli on October 26, 2020.
  */
 
 public class Coins
         extends JavaPlugin
 {
-    private static Coins instance;
-    private static Economy economy;
+    private Economy economy;
+
+    public Economy getEconomy ()
+    {
+        return economy;
+    }
 
     private Settings settings;
 
@@ -61,6 +78,20 @@ public class Coins
     public static String getUpdate ()
     {
         return update;
+    }
+
+    private final AtomicBoolean usingPaper = new AtomicBoolean();
+
+    public boolean isUsingPaper ()
+    {
+        return usingPaper.get();
+    }
+
+    public static Coins instance;
+
+    public static Coins getInstance ()
+    {
+        return instance;
     }
 
     // todo use integrated bstats metrics from spigot
@@ -94,8 +125,10 @@ public class Coins
     @Override
     public void onEnable ()
     {
-        Locale.setDefault(Locale.US);
         instance = this;
+        Locale.setDefault(Locale.US);
+
+        usingPaper.set(getServer().getVersion().contains("Paper"));
 
         settings = new Settings(this);
         settings.initConfig();
@@ -106,7 +139,7 @@ public class Coins
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
-        else if (!Bukkit.getVersion().contains("Paper"))
+        else if (!isUsingPaper())
         {
             getLogger().warning(ChatColor.YELLOW.toString() + ChatColor.UNDERLINE + Messages.USE_PAPER);
         }
@@ -118,21 +151,32 @@ public class Coins
             return;
         }
 
+        coinStorage = new CoinStorage(this);
+        coinsEffect = new CoinsEffect(this);
+        coinParticles = new CoinParticles(this);
+        coinsPickup = new CoinsPickup(this);
+        dropCoin = new DropCoin(this);
+        coinPlace = new CoinPlace(this);
+        cancelInventories = new CancelInventories(this);
+
         RegisteredServiceProvider<Economy> provider = getServer().getServicesManager().getRegistration(Economy.class);
         if (Config.get(Config.BOOLEAN.COINS_ECONOMY) || provider == null)
         {
-            Bukkit.getServicesManager().register(Economy.class, new CoinsEconomy(), this, ServicePriority.Highest);
-            CoinStorage.initPlayerData();
+            Bukkit.getServicesManager().register(Economy.class, new CoinsEconomy(this), this, ServicePriority.Highest);
+            coinStorage.initPlayerData();
 
             provider = getServer().getServicesManager().getRegistration(Economy.class);
-            Settings.setCoinsEconomy(true);
+            settings.setCoinsEconomy(true);
         }
 
         economy = provider.getProvider();
 
-        registerCommands();
-        registerEvents(new PreventSpawner(), new CoinsPickup(), new DropCoin(), new CoinPlace(), new CancelInventories(),
-                new CoinsEffect(), new CoinTexture());
+        setupCommandManager();
+        annotationParser.parse(new CoinCommands(this));
+        if (Config.get(Config.BOOLEAN.ENABLE_WITHDRAW))
+            annotationParser.parse(new WithdrawCommand(this));
+
+        registerEvents(new PreventSpawner(), coinsPickup, dropCoin, coinPlace, cancelInventories, coinsEffect);
 
         checkVersion();
         addMetrics();
@@ -161,6 +205,7 @@ public class Coins
         for (Config.BOOLEAN s : Config.BOOLEAN.values())
             metrics.addCustomChart(new Metrics.SimplePie(s.getKey(), () -> String.valueOf(Config.get(s))));
     }
+
 
     private void checkVersion ()
     {
@@ -194,61 +239,56 @@ public class Coins
         });
     }
 
-    public static Economy getEconomy ()
-    {
-        return economy;
-    }
-
-    public static Coins getInstance ()
-    {
-        return instance;
-    }
 
     private void registerEvents (Listener... listeners)
     {
         PluginManager manager = getServer().getPluginManager();
-        manager.registerEvents(Bukkit.getVersion().contains("Paper")? new PaperEvents() : new BukkitEvents(), this);
+        manager.registerEvents(isUsingPaper()? new PaperEvents() : new BukkitEvents(), this);
 
         for (Listener listener : listeners)
             manager.registerEvents(listener, this);
     }
 
-    private CoinCommands coinCommands;
 
-    public CoinCommands getCoinCommands ()
+    private BukkitCommandManager<CommandSender> commandManager;
+    private AnnotationParser<CommandSender> annotationParser;
+
+    public BukkitCommandManager<CommandSender> getCommandManager ()
     {
-        return coinCommands;
+        return commandManager;
     }
 
-    public WithdrawCommand withdrawCommand;
-
-    public WithdrawCommand getWithdrawCommand ()
+    private void setupCommandManager ()
     {
-        return withdrawCommand;
-    }
+        final Function<CommandTree<CommandSender>, CommandExecutionCoordinator<CommandSender>> executionCoordinatorFunction =
+                AsynchronousCommandExecutionCoordinator.<CommandSender>newBuilder().build();
 
-    protected DynamicCommandRegistry commands;
-    protected CompletionRegistry completions;
-
-    private void registerCommands ()
-    {
-        coinCommands = new CoinCommands(this);
-        withdrawCommand = new WithdrawCommand(this);
-
-        commands = new DynamicCommandRegistry(this);
-        completions = new CompletionRegistry(this);
-
-        commands.register(coinCommands);
-        completions.register(coinCommands);
-
-        if (Config.get(Config.BOOLEAN.ENABLE_WITHDRAW))
+        final Function<CommandSender, CommandSender> mapperFunction = Function.identity();
+        try
         {
-            commands.register(withdrawCommand);
-            completions.register(withdrawCommand);
+            this.commandManager = new PaperCommandManager<>(this, executionCoordinatorFunction, mapperFunction, mapperFunction);
         }
+        catch (final Exception e)
+        {
+            this.getLogger().severe("Failed to initialize the command manager.");
+            this.getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
+        if (commandManager.queryCapability(CloudBukkitCapabilities.BRIGADIER))
+            commandManager.registerBrigadier();
+
+        if (commandManager.queryCapability(CloudBukkitCapabilities.ASYNCHRONOUS_COMPLETION))
+            ((PaperCommandManager<CommandSender>) this.commandManager).registerAsynchronousCompletions();
+
+        final Function<ParserParameters, CommandMeta> commandMetaFunction = p -> BukkitCommandMetaBuilder.builder()
+                .withDescription(p.get(StandardParameters.DESCRIPTION, "No description")).build();
+
+        this.annotationParser = new AnnotationParser<>(this.commandManager, CommandSender.class, commandMetaFunction);
     }
 
-    private static void async (Runnable runnable)
+
+    public void delayed (final int ticks, Runnable runnable)
     {
         new BukkitRunnable()
         {
@@ -257,10 +297,10 @@ public class Coins
             {
                 runnable.run();
             }
-        }.runTaskAsynchronously(getInstance());
+        }.runTaskLater(this, ticks);
     }
 
-    public static void later (final int ticks, Runnable runnable)
+    public void async (Runnable runnable)
     {
         new BukkitRunnable()
         {
@@ -269,6 +309,55 @@ public class Coins
             {
                 runnable.run();
             }
-        }.runTaskLater(getInstance(), ticks);
+        }.runTaskAsynchronously(this);
+    }
+
+    public void sync (Runnable runnable)
+    {
+        new BukkitRunnable()
+        {
+            @Override
+            public void run ()
+            {
+                runnable.run();
+            }
+        }.runTask(this);
+    }
+
+    private CoinParticles coinParticles;
+    private CoinStorage coinStorage;
+    public CoinsPickup coinsPickup;
+    private DropCoin dropCoin;
+    private CoinPlace coinPlace;
+    private CoinsEffect coinsEffect;
+    private CancelInventories cancelInventories;
+
+    public CoinStorage getCoinStorage ()
+    {
+        return coinStorage;
+    }
+    public CoinsEffect getCoinsEffect ()
+    {
+        return coinsEffect;
+    }
+    public CoinParticles getCoinParticles ()
+    {
+        return coinParticles;
+    }
+    public CoinsPickup getCoinsPickup ()
+    {
+        return coinsPickup;
+    }
+    public CoinPlace getCoinPlace ()
+    {
+        return coinPlace;
+    }
+    public DropCoin getDropCoin ()
+    {
+        return dropCoin;
+    }
+    public CancelInventories getCancelInventories ()
+    {
+        return cancelInventories;
     }
 }

@@ -1,5 +1,6 @@
 package me.justeli.coins.cancel;
 
+import me.justeli.coins.Coins;
 import me.justeli.coins.events.CoinsPickup;
 import me.justeli.coins.item.CheckCoin;
 import org.bukkit.block.Container;
@@ -16,6 +17,13 @@ import org.bukkit.event.player.PlayerInteractEvent;
 public class CoinPlace
         implements Listener
 {
+    private final Coins instance;
+
+    public CoinPlace (Coins instance)
+    {
+        this.instance = instance;
+    }
+
     @EventHandler
     public void coinPlace (PlayerInteractEvent e)
     {
@@ -40,7 +48,7 @@ public class CoinPlace
             e.getItem().setAmount(0);
 
             double amount = coin.worth();
-            CoinsPickup.addMoney(p, amount * multi);
+            instance.getCoinsPickup().addMoney(p, amount * multi);
         }
     }
 }

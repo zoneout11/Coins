@@ -5,14 +5,20 @@ import org.bukkit.Location;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.Collections;
 
 public class CoinParticles
 {
-    public static void dropCoins (Location location, int radius, int amount)
+    private final Coins instance;
+
+    public CoinParticles (Coins instance)
+    {
+        this.instance = instance;
+    }
+
+    public void dropCoins (Location location, double radius, int amount)
     {
         Location l = location.add(0.0, 0.5, 0.0);
         ItemStack coin = new Coin(1).unique().create();
@@ -20,7 +26,7 @@ public class CoinParticles
 
         for (int i = 0; i < amount; i++)
         {
-            later(i, () ->
+            instance.delayed(i, () ->
             {
                 meta.setLore(Collections.singletonList(String.valueOf(Math.random())));
                 coin.setItemMeta(meta);
@@ -29,17 +35,5 @@ public class CoinParticles
                 item.setVelocity(new Vector((Math.random() - 0.5) * radius / 10, Math.random() * radius / 5, (Math.random() - 0.5) * radius / 10));
             });
         }
-    }
-
-    private static void later (int ticks, Runnable runnable)
-    {
-        new BukkitRunnable()
-        {
-            @Override
-            public void run ()
-            {
-                runnable.run();
-            }
-        }.runTaskLater(Coins.getInstance(), ticks);
     }
 }

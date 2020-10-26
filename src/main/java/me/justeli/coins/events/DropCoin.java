@@ -29,7 +29,14 @@ import java.util.UUID;
 public class DropCoin
         implements Listener
 {
-    private static final HashMap<Location, Integer> locationTracker = new HashMap<>();
+    private final Coins instance;
+
+    public DropCoin (Coins instance)
+    {
+        this.instance = instance;
+    }
+
+    private final HashMap<Location, Integer> locationTracker = new HashMap<>();
 
     // Drop coins when mob is killed.
     @EventHandler
@@ -47,7 +54,7 @@ public class DropCoin
             int killAmount = locationTracker.getOrDefault(location, 0);
             locationTracker.put(location, killAmount + 1);
 
-            Coins.later(144000, () -> locationTracker.put(location, locationTracker.getOrDefault(location, 0) - 1)); // subtract an hour later
+            instance.delayed(144000, () -> locationTracker.put(location, locationTracker.getOrDefault(location, 0) - 1)); // subtract an hour later
 
             if (killAmount > setLimit)
                 return;
@@ -65,7 +72,7 @@ public class DropCoin
             if ((m instanceof Monster || m instanceof Slime || m instanceof Ghast || m instanceof EnderDragon || m instanceof Shulker || m instanceof Phantom)
                     || ((m instanceof Animals || m instanceof Squid || m instanceof Snowman || m instanceof IronGolem
                     || m instanceof Villager || m instanceof Ambient) && Config.get(Config.BOOLEAN.PASSIVE_DROP))
-                    || (m instanceof Player && Config.get(Config.BOOLEAN.PLAYER_DROP) && Coins.getEconomy().getBalance((Player) m) >= 0))
+                    || (m instanceof Player && Config.get(Config.BOOLEAN.PLAYER_DROP) && instance.getEconomy().getBalance((Player) m) >= 0))
             {
                 dropMobCoin(m, killer);
             }
@@ -79,18 +86,18 @@ public class DropCoin
         {
             Player p = (Player) e.getEntity();
 
-            if (Coins.getEconomy().getBalance(p) < Config.get(Config.DOUBLE.DONT_LOSE_BELOW))
+            if (instance.getEconomy().getBalance(p) < Config.get(Config.DOUBLE.DONT_LOSE_BELOW))
                 return;
 
             double second = Config.get(Config.DOUBLE.MONEY_TAKEN__FROM);
             double first = Config.get(Config.DOUBLE.MONEY_TAKEN__TO) - second;
 
             double random = Math.random() * first + second;
-            double take = Config.get(Config.BOOLEAN.TAKE_PERCENTAGE)? (random / 100) * Coins.getEconomy().getBalance(p) : random;
+            double take = Config.get(Config.BOOLEAN.TAKE_PERCENTAGE)? (random / 100) * instance.getEconomy().getBalance(p) : random;
 
-            if (take > 0 && Coins.getEconomy().withdrawPlayer(p, (long) take).transactionSuccess())
+            if (take > 0 && instance.getEconomy().withdrawPlayer(p, (long) take).transactionSuccess())
             {
-                p.sendTitle("", color(Config.get(Config.STRING.WITHDRAW_MESSAGE).replace("{display}", Coins.getEconomy().format(take))
+                p.sendTitle("", color(Config.get(Config.STRING.WITHDRAW_MESSAGE).replace("{display}", instance.getEconomy().format(take))
                         .replace("{$}", Config.get(Config.STRING.CURRENCY_SYMBOL))), 20, 100, 20);
 
                 if (Config.get(Config.BOOLEAN.DROP_ON_DEATH) && p.getLocation().getWorld() != null)
@@ -172,13 +179,13 @@ public class DropCoin
             dropBlockCoin(e.getBlock(), e.getPlayer());
     }
 
-    private static void dropBlockCoin (Block block, Player p)
+    private void dropBlockCoin (Block block, Player p)
     {
         if (Math.random() <= Config.get(Config.DOUBLE.MINE_PERCENTAGE))
-            Coins.later(1, () -> dropCoin(1, p, block.getLocation().clone().add(0.5, 0.5, 0.5)));
+            instance.delayed(1, () -> dropCoin(1, p, block.getLocation().clone().add(0.5, 0.5, 0.5)));
     }
 
-    private static void dropCoin (int amount, Player p, Location location)
+    private void dropCoin (int amount, Player p, Location location)
     {
         if (Config.get(Config.BOOLEAN.DROP_EACH_COIN))
         {
@@ -199,9 +206,9 @@ public class DropCoin
         }
     }
 
-    private static final HashMap<UUID, Double> damages = new HashMap<>();
+    private final HashMap<UUID, Double> damages = new HashMap<>();
 
-    private static Double getPlayerDamage (UUID uuid)
+    private Double getPlayerDamage (UUID uuid)
     {
         return damages.getOrDefault(uuid, 0D);
     }

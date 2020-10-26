@@ -69,22 +69,22 @@ public class Settings
         return generatedCoin;
     }
 
-    public static void setCoinsEconomy (boolean value)
+    public void setCoinsEconomy (boolean value)
     {
         Config.set(Config.BOOLEAN.COINS_ECONOMY, value);
         FileConfiguration config = getFile();
         config.set("coinsEconomy", value);
 
-        CoinStorage.saveFile(config, new File(Coins.getInstance().getDataFolder() + File.separator + "config.yml"));
+        instance.getCoinStorage().saveFile(config, new File(instance.getDataFolder() + File.separator + "config.yml"));
         //todo make it not reset the config owo
     }
 
-    private static FileConfiguration getFile ()
+    private FileConfiguration getFile ()
     {
-        File config = new File(Coins.getInstance().getDataFolder() + File.separator + "config.yml");
+        File config = new File(instance.getDataFolder() + File.separator + "config.yml");
 
         if (!config.exists())
-            Coins.getInstance().saveDefaultConfig();
+            instance.saveDefaultConfig();
 
         return YamlConfiguration.loadConfiguration(config);
     }
@@ -156,13 +156,13 @@ public class Settings
         return setLanguage();
     }
 
-    public static void remove ()
+    public void remove ()
     {
         multiplier.clear();
         Config.clear();
     }
 
-    public static String getSettings ()
+    public String getSettings ()
     {
         StringBuilder message = new StringBuilder(Messages.LOADED_SETTINGS.toString() + "\n&r");
 
@@ -181,13 +181,13 @@ public class Settings
         return message.toString();
     }
 
-    private static boolean setLanguage ()
+    private boolean setLanguage ()
     {
         for (String lang : new String[]{"english", "dutch", "spanish", "german", "french", "swedish", "chinese", "hungarian"})
         {
-            if (!new File(Coins.getInstance().getDataFolder() + File.separator + "language" + File.separator + lang + ".json").exists())
+            if (!new File(instance.getDataFolder() + File.separator + "language" + File.separator + lang + ".json").exists())
             {
-                Coins.getInstance().saveResource("language/" + lang + ".json", false);
+                instance.saveResource("language/" + lang + ".json", false);
             }
         }
 
@@ -206,7 +206,7 @@ public class Settings
         try
         {
             JSONParser parser = new JSONParser();
-            Object object = parser.parse(new InputStreamReader(new FileInputStream(Coins.getInstance()
+            Object object = parser.parse(new InputStreamReader(new FileInputStream(instance
                     .getDataFolder() + File.separator + "language" + File.separator + lang + ".json"), StandardCharsets.UTF_8));
             JSONObject json = (JSONObject) object;
 

@@ -23,16 +23,23 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class CoinStorage
 {
-    private static final HashMap<UUID, FileConfiguration> playerData = new HashMap<>();
-    private static final AtomicReference<FileConfiguration> serverConfig = new AtomicReference<>();
+    private final Coins instance;
 
-    public static void initPlayerData ()
+    public CoinStorage (Coins instance)
     {
-        File data = getPluginFile(Coins.getInstance(), "data");
+        this.instance = instance;
+    }
+
+    private final HashMap<UUID, FileConfiguration> playerData = new HashMap<>();
+    private final AtomicReference<FileConfiguration> serverConfig = new AtomicReference<>();
+
+    public void initPlayerData ()
+    {
+        File data = getPluginFile(instance, "data");
         if (!data.exists() && data.mkdir())
             System.out.println("Created data folder for Coins.");
 
-        File folder = getPluginFile(Coins.getInstance(), "data/players");
+        File folder = getPluginFile(instance, "data/players");
         if (!folder.exists() && folder.mkdir())
             System.out.println("Created player data folder for Coins.");
 
@@ -45,13 +52,13 @@ public class CoinStorage
         for (File uuidFile : files)
         {
             UUID uuid = UUID.fromString(uuidFile.getName().replace(".yml", ""));
-            playerData.put(uuid, getFileConfiguration(Coins.getInstance(), String.format("data/players/%s.yml", uuid.toString())));
+            playerData.put(uuid, getFileConfiguration(instance, String.format("data/players/%s.yml", uuid.toString())));
         }
     }
 
-    public static void initServerData ()
+    public void initServerData ()
     {
-        File data = getPluginFile(Coins.getInstance(), "data/server.yml");
+        File data = getPluginFile(instance, "data/server.yml");
 
         try
         {
@@ -63,40 +70,40 @@ public class CoinStorage
             ex.printStackTrace();
         }
 
-        serverConfig.set(getFileConfiguration(Coins.getInstance(), "data/server.yml"));
+        serverConfig.set(getFileConfiguration(instance, "data/server.yml"));
     }
 
-    public static FileConfiguration getCachedServerData ()
+    public FileConfiguration getCachedServerData ()
     {
         return serverConfig.get();
     }
 
-    public static void setServerData (String key, Object value)
+    public void setServerData (String key, Object value)
     {
         FileConfiguration config = getCachedServerData();
         config.set(key, value);
 
         serverConfig.set(config);
-        saveFile(config, getPluginFile(Coins.getInstance(), "data/server.yml"));
+        saveFile(config, getPluginFile(instance, "data/server.yml"));
     }
 
-    static FileConfiguration getStorage (UUID uuid)
+    FileConfiguration getStorage (UUID uuid)
     {
         return uuid == null? null : playerData.get(uuid);
     }
 
-    static boolean hasData (UUID uuid)
+    boolean hasData (UUID uuid)
     {
         return playerData.containsKey(uuid);
     }
 
-    static boolean createFile (UUID uuid)
+    boolean createFile (UUID uuid)
     {
         try
         {
-            if (getPluginFile(Coins.getInstance(), String.format("data/players/%s.yml", uuid)).createNewFile())
+            if (getPluginFile(instance, String.format("data/players/%s.yml", uuid)).createNewFile())
             {
-                playerData.put(uuid, getFileConfiguration(Coins.getInstance(), String.format("data/players/%s.yml", uuid)));
+                playerData.put(uuid, getFileConfiguration(instance, String.format("data/players/%s.yml", uuid)));
                 return true;
             }
             else
@@ -110,22 +117,21 @@ public class CoinStorage
             return false;
         }
     }
-
-    static void setStorage (UUID uuid, String key, Object value)
+    void setStorage (UUID uuid, String key, Object value)
     {
         FileConfiguration config = playerData.get(uuid);
         config.set(key, value);
 
         playerData.put(uuid, config);
-        saveFile(config, getPluginFile(Coins.getInstance(), String.format("data/players/%s.yml", uuid)));
+        saveFile(config, getPluginFile(instance, String.format("data/players/%s.yml", uuid)));
     }
 
-    private static FileConfiguration getFileConfiguration (JavaPlugin instance, String path)
+    private FileConfiguration getFileConfiguration (JavaPlugin instance, String path)
     {
         return YamlConfiguration.loadConfiguration(getPluginFile(instance, path.endsWith(".yml")? path : path + ".yml"));
     }
 
-    private static File getPluginFile (JavaPlugin instance, String path)
+    private File getPluginFile (JavaPlugin instance, String path)
     {
         return new File(instance.getDataFolder().getAbsolutePath() + File.separator + path.replace("/", File.separator));
     }
@@ -139,7 +145,7 @@ public class CoinStorage
         EXECUTOR_SERVICE.submit(() -> Thread.currentThread().setName("coins-storage"));
     }
 
-    public static void saveFile (FileConfiguration data, File file)
+    public void saveFile (FileConfiguration data, File file)
     {
         Path path = file.toPath();
         String stringData = data.saveToString();

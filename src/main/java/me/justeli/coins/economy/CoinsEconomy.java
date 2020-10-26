@@ -21,16 +21,25 @@ public class CoinsEconomy
 {
     //todo received while offline
     //todo track server stats
+    //todo track withdrawn coins
+
+    private final Coins instance;
+
+    public CoinsEconomy (Coins instance)
+    {
+        this.instance = instance;
+    }
+
     @Override
     public boolean isEnabled ()
     {
-        return Coins.getEconomy().isEnabled();
+        return instance.getEconomy().isEnabled();
     }
 
     @Override
     public String getName ()
     {
-        return Coins.getInstance().getName();
+        return instance.getName();
     }
 
     @Override
@@ -77,7 +86,7 @@ public class CoinsEconomy
     @Override
     public boolean hasAccount (OfflinePlayer player)
     {
-        return CoinStorage.hasData(player.getUniqueId());
+        return instance.getCoinStorage().hasData(player.getUniqueId());
     }
 
     @Override
@@ -105,7 +114,7 @@ public class CoinsEconomy
     @Override
     public double getBalance (OfflinePlayer player)
     {
-        return CoinStorage.getStorage(player.getUniqueId()).getDouble("balance");
+        return instance.getCoinStorage().getStorage(player.getUniqueId()).getDouble("balance");
     }
 
     @Override
@@ -300,7 +309,7 @@ public class CoinsEconomy
     @Override
     public boolean createPlayerAccount (OfflinePlayer player)
     {
-        CoinStorage.createFile(player.getUniqueId());
+        instance.getCoinStorage().createFile(player.getUniqueId());
         setBalance(player, Config.get(Config.DOUBLE.STARTING_BALANCE));
         return true;
     }
@@ -332,11 +341,11 @@ public class CoinsEconomy
         if (event.isCancelled())
             return;
 
-        CoinStorage.setStorage(player.getUniqueId(), "balance", amount);
+        instance.getCoinStorage().setStorage(player.getUniqueId(), "balance", amount);
         if (!player.isOnline())
         {
-            double offline = CoinStorage.getStorage(player.getUniqueId()).getDouble("offlineBalance");
-            CoinStorage.setStorage(player.getUniqueId(), "offlineBalance", offline + transaction);
+            double offline = instance.getCoinStorage().getStorage(player.getUniqueId()).getDouble("offlineBalance");
+            instance.getCoinStorage().setStorage(player.getUniqueId(), "offlineBalance", offline + transaction);
         }
     }
 }

@@ -31,20 +31,27 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class CoinsEffect implements Listener
 {
+    private final Coins instance;
+
+    public CoinsEffect (Coins instance)
+    {
+        this.instance = instance;
+    }
+
     @EventHandler (priority = EventPriority.LOWEST)
     public void createAccount (PlayerJoinEvent e)
     {
-        if (Config.get(Config.BOOLEAN.COINS_ECONOMY) && !Coins.getEconomy().hasAccount(e.getPlayer()))
-            Coins.getEconomy().createPlayerAccount(e.getPlayer());
+        if (Config.get(Config.BOOLEAN.COINS_ECONOMY) && !instance.getEconomy().hasAccount(e.getPlayer()))
+            instance.getEconomy().createPlayerAccount(e.getPlayer());
     }
 
     @EventHandler (priority = EventPriority.MONITOR)
     public void deleteOfflineBalance (PlayerJoinEvent e)
     {
-        CoinStorage.setStorage(e.getPlayer().getUniqueId(), "offlineBalance", null);
+        instance.getCoinStorage().setStorage(e.getPlayer().getUniqueId(), "offlineBalance", null);
     }
 
-    private final static HashMap<UUID, Double> pickup = new HashMap<>();
+    private final HashMap<UUID, Double> pickup = new HashMap<>();
 
     @EventHandler
     public void coins (BalanceChangeEvent e)
@@ -58,22 +65,22 @@ public class CoinsEffect implements Listener
         if (amount == 0)
             return;
 
-        CoinStorage.setServerData("inCirculation", CoinStorage.getCachedServerData().getDouble("inCirculation") + amount);
+        instance.getCoinStorage().setServerData("inCirculation",
+                instance.getCoinStorage().getCachedServerData().getDouble("inCirculation") + amount);
 
         final UUID uuid = p.getUniqueId();
         pickup.put(uuid, amount + (pickup.containsKey(uuid)? pickup.get(uuid) : 0));
         final Double newAmount = pickup.get(uuid);
 
-        String format = Coins.getEconomy().format(Math.abs(newAmount));
+        String format = instance.getEconomy().format(Math.abs(newAmount));
         String bar = Format.color(Config.get(amount > 0? Config.STRING.DEPOSIT_MESSAGE : Config.STRING.WITHDRAW_MESSAGE).replace("{display}", format));
         p.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(bar));
 
-        Runnable task = () ->
+        instance.delayed(Config.get(Config.BOOLEAN.DROP_EACH_COIN)? 30 : 10, () ->
         {
             if (pickup.containsKey(uuid) && pickup.get(uuid).equals(newAmount))
                 pickup.remove(uuid);
-        };
-        Bukkit.getScheduler().runTaskLater(Coins.getInstance(), task, Config.get(Config.BOOLEAN.DROP_EACH_COIN)? 30L : 10L);
+        });
 
         if (amount < 0 && Config.get(Config.BOOLEAN.COINS_EFFECT))
             coinsEffect(p.getEyeLocation(), (int) -amount);
@@ -93,9 +100,9 @@ public class CoinsEffect implements Listener
         }
     }
 
-    private static final ItemStack coin = new Coin(0).create();
+    private final ItemStack coin = new Coin(0).create();
 
-    private static ItemStack getCoin ()
+    private ItemStack getCoin ()
     {
         ItemMeta meta = coin.getItemMeta();
         if (meta != null) meta.setDisplayName("Glitch Coin " + ThreadLocalRandom.current().nextDouble());
@@ -104,7 +111,7 @@ public class CoinsEffect implements Listener
         return coin;
     }
 
-    static void coinsEffect (Location location, int amount)
+    void coinsEffect (Location location, int amount)
     {
         int calculation = amount < 10? amount : (int) Math.log10(amount) * 10;
 
@@ -119,7 +126,7 @@ public class CoinsEffect implements Listener
             item.setVelocity(location.getDirection()
                     .add(new Vector((Math.random() - 0.5) / 4, 0.5 + ((Math.random() - 0.5) / 4), (Math.random() - 0.5) / 4)).multiply(0.3));
 
-            Coins.later(ThreadLocalRandom.current().nextInt(1, 8), item::remove);
+            instance.delayed(ThreadLocalRandom.current().nextInt(1, 8), item::remove);
         }
     }
 }

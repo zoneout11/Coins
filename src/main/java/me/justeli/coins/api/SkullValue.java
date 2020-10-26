@@ -2,8 +2,6 @@ package me.justeli.coins.api;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
-import me.justeli.coins.settings.Config;
-import me.justeli.coins.settings.Settings;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;

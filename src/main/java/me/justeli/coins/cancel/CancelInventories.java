@@ -1,19 +1,14 @@
 package me.justeli.coins.cancel;
 
-import me.justeli.coins.events.CoinsPickup;
+import me.justeli.coins.Coins;
 import me.justeli.coins.item.CheckCoin;
 import me.justeli.coins.item.Coin;
 import me.justeli.coins.settings.Config;
-import me.justeli.coins.settings.Settings;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.inventory.PrepareAnvilEvent;
@@ -27,6 +22,13 @@ import org.bukkit.inventory.ItemStack;
 public class CancelInventories
         implements Listener
 {
+    private final Coins instance;
+
+    public CancelInventories (Coins instance)
+    {
+        this.instance = instance;
+    }
+
     @EventHandler
     public void avoidCraftingTable (CraftItemEvent e)
     {
@@ -100,7 +102,7 @@ public class CancelInventories
         Player p = (Player) e.getWhoClicked();
 
         e.setCancelled(true);
-        CoinsPickup.giveReward(item.getAmount(), coin, p);
+        instance.getCoinsPickup().giveReward(item.getAmount(), coin, p);
         e.getCurrentItem().setAmount(0);
     }
 }

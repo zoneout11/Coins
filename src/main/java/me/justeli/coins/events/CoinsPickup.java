@@ -19,7 +19,14 @@ import java.util.Set;
 public class CoinsPickup
         implements Listener
 {
-    private final static Set<Integer> thrown = new HashSet<>();
+    private final Coins instance;
+
+    public CoinsPickup (Coins instance)
+    {
+        this.instance = instance;
+    }
+
+    private final Set<Integer> thrown = new HashSet<>();
 
     @EventHandler
     public void onPickup (PickupEvent e)
@@ -49,7 +56,7 @@ public class CoinsPickup
         }
     }
 
-    private static void giveCoin (Item item, CheckCoin coin, Player p)
+    private void giveCoin (Item item, CheckCoin coin, Player p)
     {
         thrown.add(item.getEntityId());
         item.setVelocity(new Vector(0, 0.4, 0));
@@ -64,23 +71,20 @@ public class CoinsPickup
             p.playSound(p.getEyeLocation(), Settings.getSound(), volume == 0? 0.3f : volume, pitch == 0? 0.3f : pitch);
         }
 
-        new BukkitRunnable()
+        instance.delayed(5, () ->
         {
-            public void run ()
-            {
-                item.remove();
-                thrown.remove(item.getEntityId());
-            }
-        }.runTaskLater(Coins.getInstance(), 5);
+            item.remove();
+            thrown.remove(item.getEntityId());
+        });
     }
 
-    public static void giveReward (int amount, CheckCoin coin, Player p)
+    public void giveReward (int amount, CheckCoin coin, Player p)
     {
         addMoney(p, amount * coin.worth());
     }
 
-    public static void addMoney (Player p, Double amount)
+    public void addMoney (Player p, Double amount)
     {
-        Coins.getEconomy().depositPlayer(p, Format.number(amount));
+        instance.getEconomy().depositPlayer(p, Format.number(amount));
     }
 }
