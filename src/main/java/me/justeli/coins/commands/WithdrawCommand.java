@@ -28,7 +28,7 @@ public class WithdrawCommand
     @CommandPermission("coins.withdraw")
     public void withdraw (Player player,
             @Argument("worth") @Range(min = "1", max = "10000") double worth,
-            @Argument("amount") @Range(min = "1", max = "64") int amount)
+            @Argument("amount") @Range(min = "1", max = "64") Integer inputAmount)
     {
         if (Config.get(Config.ARRAY.DISABLED_WORLDS).contains(player.getWorld().getName()))
         {
@@ -42,21 +42,25 @@ public class WithdrawCommand
             return;
         }
 
+        final int amount = inputAmount == null? 1 : inputAmount;
         double cost = worth * amount;
 
-        if (worth < 1 || amount < 1 || worth >= Config.get(Config.DOUBLE.MAX_WITHDRAW_AMOUNT) || !instance.getEconomy().has(player, cost))
+        if (worth < 1 || amount < 1 || worth > Config.get(Config.DOUBLE.MAX_WITHDRAW_AMOUNT) || !instance.getEconomy().has(player, cost))
         {
             player.sendMessage(Messages.NOT_THAT_MUCH.toString());
             return;
         }
 
-        ItemStack coin = new Coin(worth).withdraw().create();
-        coin.setAmount(amount);
+        instance.sync(() ->
+        {
+            ItemStack coin = new Coin(worth).withdraw().create();
+            coin.setAmount(amount);
 
-        player.getInventory().addItem(coin);
-        instance.getEconomy().withdrawPlayer(player, cost);
+            player.getInventory().addItem(coin);
+            instance.getEconomy().withdrawPlayer(player, cost);
 
-        // todo update message
-        player.sendMessage(Messages.WITHDRAW_COINS.toString().replace("{0}", Double.toString(worth)));
+            // todo update message
+            player.sendMessage(Messages.WITHDRAW_COINS.toString().replace("{0}", Double.toString(worth)));
+        });
     }
 }
