@@ -60,11 +60,14 @@ public class DropCoin
                 return;
         }
 
-        AttributeInstance maxHealth = ((Attributable) m).getAttribute(Attribute.GENERIC_MAX_HEALTH);
-        double hitSetting = Config.get(Config.DOUBLE.PERCENTAGE_PLAYER_HIT);
+        if (!Config.get(Config.BOOLEAN.DROP_WITH_ANY_DEATH))
+        {
+            AttributeInstance maxHealth = ((Attributable) m).getAttribute(Attribute.GENERIC_MAX_HEALTH);
+            double hitSetting = Config.get(Config.DOUBLE.PERCENTAGE_PLAYER_HIT);
 
-        if (hitSetting > 0 && maxHealth != null && getPlayerDamage(m.getUniqueId())/maxHealth.getValue() < hitSetting)
-            return;
+            if (hitSetting > 0 && maxHealth != null && getPlayerDamage(m.getUniqueId())/maxHealth.getValue() < hitSetting)
+                return;
+        }
 
         Player killer = getKiller(e.getEntity());
         if (killer != null)
