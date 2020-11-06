@@ -1,8 +1,7 @@
 package me.justeli.coins.economy;
 
 import me.justeli.coins.Coins;
-import me.justeli.coins.settings.Config;
-import me.justeli.coins.settings.Settings;
+import me.justeli.coins.settings.OldConfig;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
@@ -57,22 +56,22 @@ public class CoinsEconomy
     @Override
     public String format (double amount) //todo proper decimals
     {
-        int integer = Config.get(Config.DOUBLE.MONEY_DECIMALS).intValue();
-        return Config.get(Config.STRING.DISPLAY_CURRENCY)
-                .replace("{$}", Config.get(Config.STRING.CURRENCY_SYMBOL))
+        int integer = OldConfig.get(OldConfig.DOUBLE.MONEY_DECIMALS).intValue();
+        return OldConfig.get(OldConfig.STRING.DISPLAY_CURRENCY)
+                .replace("{$}", OldConfig.get(OldConfig.STRING.CURRENCY_SYMBOL))
                 .replace("{amount}", String.format("%,." + integer + "f", amount));
     }
 
     @Override
     public String currencyNamePlural ()
     {
-        return ChatColor.stripColor(Config.get(Config.STRING.NAME_OF_COIN) + Config.get(Config.STRING.MULTI_SUFFIX));
+        return ChatColor.stripColor(OldConfig.get(OldConfig.STRING.NAME_OF_COIN) + OldConfig.get(OldConfig.STRING.MULTI_SUFFIX));
     }
 
     @Override
     public String currencyNameSingular ()
     {
-        return ChatColor.stripColor(Config.get(Config.STRING.NAME_OF_COIN));
+        return ChatColor.stripColor(OldConfig.get(OldConfig.STRING.NAME_OF_COIN));
     }
 
     @Override
@@ -310,7 +309,7 @@ public class CoinsEconomy
     public boolean createPlayerAccount (OfflinePlayer player)
     {
         instance.getCoinStorage().createFile(player.getUniqueId());
-        setBalance(player, Config.get(Config.DOUBLE.STARTING_BALANCE));
+        setBalance(player, OldConfig.get(OldConfig.DOUBLE.STARTING_BALANCE));
         return true;
     }
 

@@ -1,8 +1,6 @@
 package me.justeli.coins.settings;
 
 import me.justeli.coins.Coins;
-import me.justeli.coins.economy.CoinStorage;
-import me.justeli.coins.item.GeneratedCoin;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
@@ -71,7 +69,7 @@ public class Settings
 
     public void setCoinsEconomy (boolean value)
     {
-        Config.set(Config.BOOLEAN.COINS_ECONOMY, value);
+        OldConfig.set(OldConfig.BOOLEAN.COINS_ECONOMY, value);
         FileConfiguration config = getFile();
         config.set("coinsEconomy", value);
 
@@ -94,28 +92,28 @@ public class Settings
         FileConfiguration file = getFile();
         try
         {
-            for (Config.BOOLEAN s : Config.BOOLEAN.values())
+            for (OldConfig.BOOLEAN s : OldConfig.BOOLEAN.values())
             {
-                Config.set(s, file.getBoolean(s.getKey()));
+                OldConfig.set(s, file.getBoolean(s.getKey()));
             }
 
-            for (Config.STRING s : Config.STRING.values())
+            for (OldConfig.STRING s : OldConfig.STRING.values())
             {
                 String value = file.getString(s.getKey());
-                Config.set(s, value == null? s.getDefault() : value);
+                OldConfig.set(s, value == null? s.getDefault() : value);
             }
 
-            for (Config.DOUBLE s : Config.DOUBLE.values())
+            for (OldConfig.DOUBLE s : OldConfig.DOUBLE.values())
             {
-                Config.set(s, file.getDouble(s.getKey()));
+                OldConfig.set(s, file.getDouble(s.getKey()));
             }
 
-            for (Config.ARRAY s : Config.ARRAY.values())
+            for (OldConfig.ARRAY s : OldConfig.ARRAY.values())
             {
-                Config.set(s, new HashSet<>(file.getStringList(s.getKey())));
+                OldConfig.set(s, new HashSet<>(file.getStringList(s.getKey())));
             }
 
-            ConfigurationSection mobMultiplier = file.getConfigurationSection(Config.CUSTOM.MOB_MULTIPLIER.getKey());
+            ConfigurationSection mobMultiplier = file.getConfigurationSection(OldConfig.CUSTOM.MOB_MULTIPLIER.getKey());
             if (mobMultiplier != null)
             {
                 for (String key : mobMultiplier.getKeys(false))
@@ -123,7 +121,7 @@ public class Settings
                     try
                     {
                         EntityType type = EntityType.valueOf(key.toUpperCase());
-                        multiplier.put(type, file.getInt(Config.CUSTOM.MOB_MULTIPLIER.getKey() + "." + key));
+                        multiplier.put(type, file.getInt(OldConfig.CUSTOM.MOB_MULTIPLIER.getKey() + "." + key));
                     }
                     catch (IllegalArgumentException e)
                     {
@@ -140,7 +138,7 @@ public class Settings
 
         try
         {
-            sound.set(Sound.valueOf(Config.get(Config.STRING.SOUND_NAME).toUpperCase()));
+            sound.set(Sound.valueOf(OldConfig.get(OldConfig.STRING.SOUND_NAME).toUpperCase()));
         }
         catch (IllegalArgumentException e)
         {
@@ -148,7 +146,7 @@ public class Settings
             return false;
         }
 
-        formatter.set("%." + Config.get(Config.DOUBLE.MONEY_DECIMALS).intValue() + "f");
+        formatter.set("%." + OldConfig.get(OldConfig.DOUBLE.MONEY_DECIMALS).intValue() + "f");
 
         generatedCoin = new GeneratedCoin();
         generatedCoin.init();
@@ -159,24 +157,24 @@ public class Settings
     public void remove ()
     {
         multiplier.clear();
-        Config.clear();
+        OldConfig.clear();
     }
 
     public String getSettings ()
     {
         StringBuilder message = new StringBuilder(Messages.LOADED_SETTINGS.toString() + "\n&r");
 
-        for (Config.STRING s : Config.STRING.values())
-            message.append(s.getKey()).append("&7: &8").append(Config.get(s)).append("\n&r");
+        for (OldConfig.STRING s : OldConfig.STRING.values())
+            message.append(s.getKey()).append("&7: &8").append(OldConfig.get(s)).append("\n&r");
 
-        for (Config.BOOLEAN s : Config.BOOLEAN.values())
-            message.append(s.getKey()).append("&7: ").append(Config.get(s).toString().replace("true", "&atrue").replace("false", "&cfalse")).append("\n&r");
+        for (OldConfig.BOOLEAN s : OldConfig.BOOLEAN.values())
+            message.append(s.getKey()).append("&7: ").append(OldConfig.get(s).toString().replace("true", "&atrue").replace("false", "&cfalse")).append("\n&r");
 
-        for (Config.DOUBLE s : Config.DOUBLE.values())
-            message.append(s.getKey()).append("&7: &e").append(Config.get(s)).append("\n&r");
+        for (OldConfig.DOUBLE s : OldConfig.DOUBLE.values())
+            message.append(s.getKey()).append("&7: &e").append(OldConfig.get(s)).append("\n&r");
 
-        for (Config.ARRAY s : Config.ARRAY.values())
-            message.append(s.getKey()).append("&7: &b").append(Config.get(s)).append("\n&r");
+        for (OldConfig.ARRAY s : OldConfig.ARRAY.values())
+            message.append(s.getKey()).append("&7: &b").append(OldConfig.get(s)).append("\n&r");
 
         return message.toString();
     }

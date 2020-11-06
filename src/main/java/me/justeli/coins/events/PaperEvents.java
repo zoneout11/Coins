@@ -1,6 +1,6 @@
 package me.justeli.coins.events;
 
-import me.justeli.coins.settings.Config;
+import me.justeli.coins.settings.OldConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -18,7 +18,7 @@ public class PaperEvents implements Listener
         PickupEvent event = new PickupEvent(e.getPlayer(), e.getItem());
         Bukkit.getServer().getPluginManager().callEvent(event);
 
-        if (event.isCancelled() && !Config.get(Config.BOOLEAN.PICKUP_EFFECT))
+        if (event.isCancelled() && !OldConfig.get(OldConfig.BOOLEAN.PICKUP_EFFECT))
             e.setCancelled(true);
     }
 }

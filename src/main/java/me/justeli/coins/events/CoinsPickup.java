@@ -3,14 +3,12 @@ package me.justeli.coins.events;
 import me.justeli.coins.Coins;
 import me.justeli.coins.api.Format;
 import me.justeli.coins.item.CheckCoin;
-import me.justeli.coins.settings.Config;
+import me.justeli.coins.settings.OldConfig;
 import me.justeli.coins.settings.Settings;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.HashSet;
@@ -31,7 +29,7 @@ public class CoinsPickup
     @EventHandler
     public void onPickup (PickupEvent e)
     {
-        if (Config.get(Config.ARRAY.DISABLED_WORLDS).contains(e.getPlayer().getWorld().getName()))
+        if (OldConfig.get(OldConfig.ARRAY.DISABLED_WORLDS).contains(e.getPlayer().getWorld().getName()))
             return;
 
         CheckCoin coin = new CheckCoin(e.getItem().getItemStack());
@@ -63,10 +61,10 @@ public class CoinsPickup
 
         giveReward(item.getItemStack().getAmount(), coin, p);
 
-        if (Config.get(Config.BOOLEAN.PICKUP_SOUND))
+        if (OldConfig.get(OldConfig.BOOLEAN.PICKUP_SOUND))
         {
-            float volume = Config.get(Config.DOUBLE.SOUND_VOLUME).floatValue();
-            float pitch = Config.get(Config.DOUBLE.SOUND_PITCH).floatValue();
+            float volume = OldConfig.get(OldConfig.DOUBLE.SOUND_VOLUME).floatValue();
+            float pitch = OldConfig.get(OldConfig.DOUBLE.SOUND_PITCH).floatValue();
 
             p.playSound(p.getEyeLocation(), Settings.getSound(), volume == 0? 0.3f : volume, pitch == 0? 0.3f : pitch);
         }

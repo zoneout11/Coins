@@ -1,7 +1,6 @@
 package me.justeli.coins.cancel;
 
-import me.justeli.coins.settings.Config;
-import me.justeli.coins.settings.Settings;
+import me.justeli.coins.settings.OldConfig;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
@@ -19,12 +18,12 @@ public class PreventSpawner
     @EventHandler
     public void preventSpawnerCoin (CreatureSpawnEvent e)
     {
-        if (Config.get(Config.ARRAY.DISABLED_WORLDS).contains(e.getEntity().getWorld().getName()))
+        if (OldConfig.get(OldConfig.ARRAY.DISABLED_WORLDS).contains(e.getEntity().getWorld().getName()))
             return;
 
         if (e.getSpawnReason().equals(SpawnReason.SPAWNER) || e.getEntityType().equals(EntityType.CAVE_SPIDER))
         {
-            if (!Config.get(Config.BOOLEAN.SPAWNER_DROP))
+            if (!OldConfig.get(OldConfig.BOOLEAN.SPAWNER_DROP))
                 prevent.put(e.getEntity().getUniqueId().toString() + ".spawner", true);
         }
     }
@@ -33,7 +32,7 @@ public class PreventSpawner
     public void splitPrevent (CreatureSpawnEvent e)
     {
         if (e.getSpawnReason().equals(SpawnReason.SLIME_SPLIT))
-            if (Config.get(Config.BOOLEAN.PREVENT_SPLITS))
+            if (OldConfig.get(OldConfig.BOOLEAN.PREVENT_SPLITS))
                 prevent.put(e.getEntity().getUniqueId().toString() + ".slime", true);
     }
 

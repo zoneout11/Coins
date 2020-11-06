@@ -2,8 +2,7 @@ package me.justeli.coins.cancel;
 
 import me.justeli.coins.Coins;
 import me.justeli.coins.item.CheckCoin;
-import me.justeli.coins.item.Coin;
-import me.justeli.coins.settings.Config;
+import me.justeli.coins.settings.OldConfig;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -72,7 +71,7 @@ public class CancelInventories
         if (!coin.is() || coin.withdrawed())
             return;
 
-        if (Config.get(Config.BOOLEAN.DISABLE_HOPPERS))
+        if (OldConfig.get(OldConfig.BOOLEAN.DISABLE_HOPPERS))
         {
             e.setCancelled(true);
         }
@@ -85,7 +84,7 @@ public class CancelInventories
     @EventHandler (ignoreCancelled = true)
     public void coinInventory (InventoryClickEvent e)
     {
-        if (Config.get(Config.ARRAY.DISABLED_WORLDS).contains(e.getWhoClicked().getWorld().getName()))
+        if (OldConfig.get(OldConfig.ARRAY.DISABLED_WORLDS).contains(e.getWhoClicked().getWorld().getName()))
             return;
 
         if (!(e.getWhoClicked() instanceof Player))

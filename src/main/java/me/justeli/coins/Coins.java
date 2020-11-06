@@ -27,7 +27,7 @@ import me.justeli.coins.events.DropCoin;
 import me.justeli.coins.events.PaperEvents;
 import me.justeli.coins.commands.CoinCommands;
 import me.justeli.coins.item.CoinParticles;
-import me.justeli.coins.settings.Config;
+import me.justeli.coins.settings.OldConfig;
 import me.justeli.coins.settings.Messages;
 import me.justeli.coins.settings.Settings;
 import net.milkbowl.vault.economy.Economy;
@@ -160,7 +160,7 @@ public class Coins
         cancelInventories = new CancelInventories(this);
 
         RegisteredServiceProvider<Economy> provider = getServer().getServicesManager().getRegistration(Economy.class);
-        if (Config.get(Config.BOOLEAN.COINS_ECONOMY) || provider == null)
+        if (OldConfig.get(OldConfig.BOOLEAN.COINS_ECONOMY) || provider == null)
         {
             Bukkit.getServicesManager().register(Economy.class, new CoinsEconomy(this), this, ServicePriority.Highest);
             coinStorage.initPlayerData();
@@ -173,7 +173,7 @@ public class Coins
 
         setupCommandManager();
         annotationParser.parse(new CoinCommands(this));
-        if (Config.get(Config.BOOLEAN.ENABLE_WITHDRAW))
+        if (OldConfig.get(OldConfig.BOOLEAN.ENABLE_WITHDRAW))
             annotationParser.parse(new WithdrawCommand(this));
 
         registerEvents(new PreventSpawner(), coinsPickup, dropCoin, coinPlace, cancelInventories, coinsEffect);
@@ -186,24 +186,24 @@ public class Coins
     {
         Metrics metrics = new Metrics(this, 831);
 
-        for (Config.STRING s : Config.STRING.values())
+        for (OldConfig.STRING s : OldConfig.STRING.values())
         {
             metrics.addCustomChart(new Metrics.SimplePie(s.getKey(), () ->
             {
-                if (s.equals(Config.STRING.SKULL_TEXTURE))
+                if (s.equals(OldConfig.STRING.SKULL_TEXTURE))
                 {
-                    String texture = Config.get(s);
+                    String texture = OldConfig.get(s);
                     return String.valueOf(texture != null && !texture.isEmpty());
                 }
-                return Config.get(s);
+                return OldConfig.get(s);
             }));
         }
 
-        for (Config.DOUBLE s : Config.DOUBLE.values())
-            metrics.addCustomChart(new Metrics.SimplePie(s.getKey(), () -> String.valueOf(Config.get(s))));
+        for (OldConfig.DOUBLE s : OldConfig.DOUBLE.values())
+            metrics.addCustomChart(new Metrics.SimplePie(s.getKey(), () -> String.valueOf(OldConfig.get(s))));
 
-        for (Config.BOOLEAN s : Config.BOOLEAN.values())
-            metrics.addCustomChart(new Metrics.SimplePie(s.getKey(), () -> String.valueOf(Config.get(s))));
+        for (OldConfig.BOOLEAN s : OldConfig.BOOLEAN.values())
+            metrics.addCustomChart(new Metrics.SimplePie(s.getKey(), () -> String.valueOf(OldConfig.get(s))));
     }
 
 

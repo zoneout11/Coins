@@ -2,11 +2,9 @@ package me.justeli.coins.economy;
 
 import me.justeli.coins.Coins;
 import me.justeli.coins.api.Format;
-import me.justeli.coins.item.Coin;
-import me.justeli.coins.settings.Config;
+import me.justeli.coins.settings.OldConfig;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Item;
@@ -41,7 +39,7 @@ public class CoinsEffect implements Listener
     @EventHandler (priority = EventPriority.LOWEST)
     public void createAccount (PlayerJoinEvent e)
     {
-        if (Config.get(Config.BOOLEAN.COINS_ECONOMY) && !instance.getEconomy().hasAccount(e.getPlayer()))
+        if (OldConfig.get(OldConfig.BOOLEAN.COINS_ECONOMY) && !instance.getEconomy().hasAccount(e.getPlayer()))
             instance.getEconomy().createPlayerAccount(e.getPlayer());
     }
 
@@ -73,16 +71,16 @@ public class CoinsEffect implements Listener
         final Double newAmount = pickup.get(uuid);
 
         String format = instance.getEconomy().format(Math.abs(newAmount));
-        String bar = Format.color(Config.get(amount > 0? Config.STRING.DEPOSIT_MESSAGE : Config.STRING.WITHDRAW_MESSAGE).replace("{display}", format));
+        String bar = Format.color(OldConfig.get(amount > 0? OldConfig.STRING.DEPOSIT_MESSAGE : OldConfig.STRING.WITHDRAW_MESSAGE).replace("{display}", format));
         p.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(bar));
 
-        instance.delayed(Config.get(Config.BOOLEAN.DROP_EACH_COIN)? 30 : 10, () ->
+        instance.delayed(OldConfig.get(OldConfig.BOOLEAN.DROP_EACH_COIN)? 30 : 10, () ->
         {
             if (pickup.containsKey(uuid) && pickup.get(uuid).equals(newAmount))
                 pickup.remove(uuid);
         });
 
-        if (amount < 0 && Config.get(Config.BOOLEAN.COINS_EFFECT))
+        if (amount < 0 && OldConfig.get(OldConfig.BOOLEAN.COINS_EFFECT))
             coinsEffect(p.getEyeLocation(), (int) -amount);
     }
 

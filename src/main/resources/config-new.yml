@@ -1,116 +1,134 @@
+# # # # # # # # # # # # # # # # # # # # # # # # # #
+#    █████████            ███                     #   ████████
+#   ███░░░░░███          ░░░                      #  ███░░░░███
+#  ███     ░░░   ██████  ████  ████████    █████  # ░░░    ░███
+# ░███          ███░░███░░███░ ░███░░███  ███░░   #    ███████
+# ░███         ░███ ░███ ░███  ░███ ░███░ ░█████  #   ███░░░░
+# ░░███     ███░███ ░███ ░███  ░███ ░███  ░░░░███ #  ███      █
+#  ░░█████████ ░░██████  █████ ████ █████ ██████  # ░██████████
+#   ░░░░░░░░░   ░░░░░░  ░░░░░░ ░░░ ░░░░░░ ░░░░░   # ░░░░░░░░░░
+# # # # # # # # # # # # # # # # # # # # # # # # # #
+# https://manytools.org/hacker-tools/ascii-banner/ // DOS Rebel // Wide
+
+# The main language used in-game.
+# Included: English, Dutch, German, French, Spanish, Swedish, Chinese, Italian, Hungarian
 language: English
 
+# Naming of the currency and coins.
 naming:
-  symbol: $
-  single: Coin
-  plural: Coins
-  color: ffaa00
+  symbol: $       # currency symbol
+  single: Coin    # single name of a coin item
+  plural: Coins   # plural name of a coin item
+  color: ffaa00   # the color of the display name
 
+# Define any kind of coin that you ever dreamt of.
+# Check out: https://github.com/JustEli/Coins/wiki/defining-coins
 coins:
-  BLOCK:
+  Block:
     item: gold block
-    chance: 0.1
-    data: 5
-    glowing: true
-    sound: "ITEM_ARMOR_EQUIP_GOLD"
-    worth: 10-15
-  INGOT:
+    worth: [10.0, 15.0]
+    glow: true
+  Ingot:
     item: gold ingot
-    chance: 0.2
-    data: 4
-    stack: true
-    sound: "ITEM_ARMOR_EQUIP_GOLD"
-    worth: 5-9
-  NUGGET:
+    worth: [5.0, 9.0]
+  Nugget:
     item: gold nugget
-    chance: 0.5
+    worth: [1.0, 4.0]
     stack: true
-    skull: eyJ0ZXh[...]
-    sound: "ITEM_ARMOR_EQUIP_GOLD" # remove to have no sound == null
-    worth: 1-4
 
+# The way currency and action bars are shown.
+# Check out: https://github.com/JustEli/Coins/wiki/display-settings
 display:
-  currency: "${naming.currency}${amount}"
+  currency: "${naming.currency}${_amount}"
   deposit: "&2+ &a${display.currency}"
   withdraw: "&4- &c${display.currency}"
 
-types:
-  PLAYER:
-    instance: [Player]
-  HOSTILE:
-    instance: [Monster, Boss, Flying, Slime, Wolf]
-    entity: []
-  PASSIVE:
-    instance: [Mob]
-  BLOCK:
-    material: []
-
+# Tell the plugin when and what coins to drop.
+# Check out: https://github.com/JustEli/Coins/wiki/defining-drops
 drops:
-  PLAYER:
+  playerKill:
     enabled: false
+    handling:
+      instances: [Player]
+      events: [KILL_ENTITY]
+      entities: []
     preventAlts: true
     chance:
-      BLOCK: 0.1
-      INGOT: 0.2
-      NUGGET: 0.4
-  HOSTILE:
+      Block: 0.1
+      Ingot: 0.2
+      Nugget: 0.4
+  hostileKill:
     enabled: true
     spawners: false
     splitReward: false
-  PASSIVE:
+    instances: [Monster, Boss, Flying, Slime, Wolf]
+    events: [KILL_ENTITY]
+    entities: []
+  passiveKill:
     enabled: false
     spawners: false
-  BLOCK:
+    instance: [Mob]
+    events: [KILL_ENTITY]
+    entities: []
+  entityDeath:
+    enabled: false
+    handling:
+      events: [ENTITY_DEATH]
+  mineBlock:
     enabled: true
-
-
-moneyAmount:
-  from: 3.0
-  to: 7.0
-mobMultiplier:
-  ENDER_DRAGON: 50
-  WITHER: 20
-  PLAYER: 3
-experienceBlocks:
-  GOLD_ORE: 0.5
-  IRON_ORE: 0.3
-  COAL_ORE: 0.2
-  SPONGE: 0.1
-  LAPIS_LAZULI_ORE: 0.2
-  DIAMOND_ORE: 0.6
-  REDSTONE_ORE: 0.2
-  EMERALD_ORE: 0.6
-  NETHER_QUARTZ_ORE: 0.1
-  NETHERITE: 0.7
-  SPAWNER: 1.0
+    materials: []
+    events: [BREAK_BLOCK]
+  catchFish:
+    enabled: false
+    events: [CATCH_FISH]
+  unlockRecipe:
+    enabled: false
+    events: [UNLOCK_RECIPE]
+  achievement:
+    enabled: false
+    events: [ACHIEVEMENT_GET]
+  tamePet:
+    enabled: false
+    events: [TAME_PET]
+  breedAnimal:
+    enabled: false
+    events: [BREED_ANIMAL]
+  repairItem:
+    enabled: false
+    events: [REPAIR_ITEM]
+  enchantItem:
+    enabled: false
+    events: [ENCHANT_ITEM]
+  brewPotion:
+    enabled: false
+    events: [BREW_POTION]
 
 settings:
-  texturePack: false
-  dropEachCoin: true
-  dropWithAnyDeath: false
-  moneyDecimals: 2
+  coinDecimals: 2
   percentagePlayerHit: 0.9
   disableHoppers: false
-  soundPitch: 0.3
   soundVolume: 0.5
   limitForLocation: 1
   disabledWorlds: []
 
 withdraw:
   enabled: true
-  maximum: 10000
-  deposit: [LEFT_CLICK, RIGHT_CLICK, PICKUP] #CONTAINER
+  values:
+    Block: [1000.01, 10000.0]
+    Ingot: [100.01, 1000.0]
+    Nugget: [1.0, 100.0]
+  deposit: [LEFT_CLICK, RIGHT_CLICK, PICKUP] #CONTAINER, COMMAND
 
 death:
-  take: true
-  takeAmountFromTo: [10, 30]
+  enabled: true
+  takePercentage: false
+  takeAmount: [10, 30] # instead can allow [10%, 30%]
   preventNegativeBalance: true
   dropAtDeathLocation: false
-  takePercentage: false
 
 economy:
   integration: false
-  effect: true
-  statingBalance: 100
+  effects: true
+  startingBalance: 100
   track: false
   maximumBalance: 1000000000000

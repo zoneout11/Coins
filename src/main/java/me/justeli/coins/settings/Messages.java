@@ -62,7 +62,7 @@ public enum Messages
         HashMap<Messages, String> language = Settings.getLanguage();
         String notFormat = language.getOrDefault(this, value);
 
-        return Format.color(notFormat.replace("{$}", Config.get(Config.STRING.CURRENCY_SYMBOL)));
+        return Format.color(notFormat.replace("{$}", OldConfig.get(OldConfig.STRING.CURRENCY_SYMBOL)));
     }
 
     public String format (String... input)

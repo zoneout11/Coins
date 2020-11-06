@@ -2,8 +2,13 @@ package me.justeli.coins.item;
 
 import me.justeli.coins.Coins;
 import me.justeli.coins.api.Format;
+import me.justeli.coins.api.SkullValue;
 import me.justeli.coins.settings.Config;
+import me.justeli.coins.settings.OldConfig;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Sound;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -13,49 +18,79 @@ import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Created by Eli on June 08, 2020.
- * Coins: me.justeli.coins.item
+ * Created by Eli on November 04, 2020.
+ * Coins: me.justeli.coins.settings
  */
 public class Coin
 {
-    private final ItemStack coin;
-    private final ItemMeta meta;
-    private final Double worth;
+    private ItemStack coin;
+    private ItemMeta clonedMeta;
+    private String error;
 
-    public Coin (double worth)
+    private final Coins instance;
+    private final String name;
+    private final Sound sound;
+    private final double minWorth;
+    private final double maxWorth;
+    private final boolean stack;
+    private final float pitch;
+
+    public Coin (Coins instance, String name, Material material, String skullTexture, Sound sound, double minWorth,
+            double maxWorth, boolean stack, int modelData, boolean glow, float pitch)
     {
-        this.coin = Coins.getInstance().getSettings().getGeneratedCoin().getCoin();
-        this.meta = coin.getItemMeta();
-        this.worth = worth;
+        this.instance = instance;
+        this.name = name;
+        this.sound = sound;
+        this.minWorth = minWorth;
+        this.maxWorth = maxWorth;
+        this.stack = stack;
+        this.pitch = pitch;
+
+        if (material == null && (skullTexture == null || skullTexture.isEmpty()))
+        {
+            error = "There is no material or skull texture defined for coin '" + name + "'.";
+            return;
+        }
+
+        coin = skullTexture == null? new ItemStack(material) : SkullValue.get(skullTexture);
+        if (coin == null)
+        {
+            error = "There is no valid skull texture for coin '" + name + "'.";
+            return;
+        }
+
+        ItemMeta meta = coin.getItemMeta();
+
+        if (meta == null)
+        {
+            error = "The material of a coin cannot be Air.";
+            return;
+        }
+
+        if (modelData > 0) meta.setCustomModelData(modelData);
+        if (glow) meta.addEnchant(Enchantment.DURABILITY, 1, true);
+
+        // todo optimize
+        meta.setDisplayName(Format.color(OldConfig.get(OldConfig.STRING.NAME_OF_COIN)));
+
+        coin.setItemMeta(meta);
     }
 
-    public Coin ()
+    public Coin value ()
     {
-        this.coin = Coins.getInstance().getSettings().getGeneratedCoin().getCoin();
-        this.meta = coin.getItemMeta();
-
-        if (Config.get(Config.BOOLEAN.DROP_EACH_COIN))
-        {
-            this.worth = 1d;
-        }
-        else
-        {
-            double second = Config.get(Config.DOUBLE.MONEY_AMOUNT__FROM);
-            double first = Config.get(Config.DOUBLE.MONEY_AMOUNT__TO) - second;
-
-            this.worth = Math.random() * first + second;
-        }
-    }
-
-    public Coin setFor (Player p)
-    {
-        setTag("player", p.getName());
+        setTag("coin", Math.random() * (maxWorth - minWorth) + minWorth);
         return this;
     }
 
-    public Coin worth (double coins)
+    public Coin limit (Player player)
     {
-        setTag("coin", coins);
+        setTag("player", player.getName());
+        return this;
+    }
+
+    public Coin value (double worth)
+    {
+        setTag("coin", worth);
         return this;
     }
 
@@ -65,46 +100,93 @@ public class Coin
         return this;
     }
 
-    public Coin stack (boolean stack)
-    {
-        if (!stack) unique();
-        else setLore();
-        return this;
-    }
-
     public Coin withdraw ()
     {
-        setName("&e" + worth.longValue() + " " + Config.get(Config.STRING.NAME_OF_COIN) + Config.get(Config.STRING.MULTI_SUFFIX));
         setTag("withdraw", "true");
         return this;
     }
 
-    public ItemStack create ()
+    public ItemStack generate ()
     {
-        setTag("coin", worth);
-        coin.setItemMeta(meta);
-        return coin;
+        Double worth = clonedMeta.getPersistentDataContainer().get(new NamespacedKey(instance, "worth"), PersistentDataType.DOUBLE);
+
+        if (worth == null)
+            return coin.clone();
+
+        setName(String.format("%,." + Config.getCoinDecimals() + "f %s", worth, worth == 1? Config.getSingleCoinName() : Config.getPluralCoinName()));
+
+        ItemStack generated = coin.clone();
+
+        generated.setItemMeta(clonedMeta);
+        clonedMeta = coin.getItemMeta();
+
+        return generated;
     }
 
     private void setName (String name)
     {
-        meta.setDisplayName(Format.color(name));
+        clonedMeta.setDisplayName(Config.getCoinColor() + name);
     }
 
     private void setLore (String... lore)
     {
-        meta.setLore(Arrays.asList(lore));
+        clonedMeta.setLore(Arrays.asList(lore));
     }
 
     private void setTag (String key, String tag)
     {
-        NamespacedKey namespacedKey = new NamespacedKey(Coins.getInstance(), key);
-        meta.getPersistentDataContainer().set(namespacedKey, PersistentDataType.STRING, tag);
+        NamespacedKey namespacedKey = new NamespacedKey(instance, key);
+        clonedMeta.getPersistentDataContainer().set(namespacedKey, PersistentDataType.STRING, tag);
     }
 
     private void setTag (String key, Double tag)
     {
-        NamespacedKey namespacedKey = new NamespacedKey(Coins.getInstance(), key);
-        meta.getPersistentDataContainer().set(namespacedKey, PersistentDataType.DOUBLE, tag);
+        NamespacedKey namespacedKey = new NamespacedKey(instance, key);
+        clonedMeta.getPersistentDataContainer().set(namespacedKey, PersistentDataType.DOUBLE, tag);
+    }
+
+    public String getName ()
+    {
+        return name;
+    }
+
+    public Sound getSound ()
+    {
+        return sound;
+    }
+
+    public double getMinWorth ()
+    {
+        return minWorth;
+    }
+
+    public double getMaxWorth ()
+    {
+        return maxWorth;
+    }
+
+    public ItemStack getRawCoin ()
+    {
+        return coin.clone();
+    }
+
+    public boolean isValid ()
+    {
+        return error == null;
+    }
+
+    public String getError ()
+    {
+        return error;
+    }
+
+    public boolean isStackable ()
+    {
+        return stack;
+    }
+
+    public float getPitch ()
+    {
+        return pitch;
     }
 }

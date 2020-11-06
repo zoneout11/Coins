@@ -5,8 +5,7 @@ import cloud.commandframework.annotations.CommandMethod;
 import cloud.commandframework.annotations.CommandPermission;
 import cloud.commandframework.annotations.specifier.Range;
 import me.justeli.coins.Coins;
-import me.justeli.coins.item.Coin;
-import me.justeli.coins.settings.Config;
+import me.justeli.coins.settings.OldConfig;
 import me.justeli.coins.settings.Messages;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -28,9 +27,9 @@ public class WithdrawCommand
     @CommandPermission("coins.withdraw")
     public void withdraw (Player player,
             @Argument("worth") @Range(min = "1", max = "10000") double worth,
-            @Argument("amount") @Range(min = "1", max = "64") Integer inputAmount)
+            final @Argument(value = "amount", defaultValue = "1") @Range(min = "1", max = "64") Integer amount)
     {
-        if (Config.get(Config.ARRAY.DISABLED_WORLDS).contains(player.getWorld().getName()))
+        if (OldConfig.get(OldConfig.ARRAY.DISABLED_WORLDS).contains(player.getWorld().getName()))
         {
             player.sendMessage(Messages.COINS_DISABLED.toString());
             return;
@@ -42,10 +41,9 @@ public class WithdrawCommand
             return;
         }
 
-        final int amount = inputAmount == null? 1 : inputAmount;
         double cost = worth * amount;
 
-        if (worth < 1 || amount < 1 || worth > Config.get(Config.DOUBLE.MAX_WITHDRAW_AMOUNT) || !instance.getEconomy().has(player, cost))
+        if (worth < 1 || amount < 1 || worth > OldConfig.get(OldConfig.DOUBLE.MAX_WITHDRAW_AMOUNT) || !instance.getEconomy().has(player, cost))
         {
             player.sendMessage(Messages.NOT_THAT_MUCH.toString());
             return;

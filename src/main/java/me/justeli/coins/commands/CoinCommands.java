@@ -8,14 +8,12 @@ import me.justeli.coins.Coins;
 import me.justeli.coins.api.Extras;
 import me.justeli.coins.economy.CoinsAPI;
 import me.justeli.coins.item.CheckCoin;
-import me.justeli.coins.settings.Config;
+import me.justeli.coins.settings.OldConfig;
 import me.justeli.coins.settings.Messages;
-import me.justeli.coins.settings.Settings;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
@@ -76,7 +74,7 @@ public class CoinCommands
 
     private void drop (CommandSender sender, Location location, double amount, double r)
     {
-        if (Config.get(Config.ARRAY.DISABLED_WORLDS).contains(location.getWorld().getName()))
+        if (OldConfig.get(OldConfig.ARRAY.DISABLED_WORLDS).contains(location.getWorld().getName()))
         {
             sender.sendMessage(Messages.COINS_DISABLED.toString());
             return;
@@ -239,7 +237,7 @@ public class CoinCommands
             sender.sendMessage(Messages.VERSION_CHECK.toString());
         }
 
-        if (Config.get(Config.BOOLEAN.ENABLE_WITHDRAW) && sender.hasPermission("coins.withdraw"))
+        if (OldConfig.get(OldConfig.BOOLEAN.ENABLE_WITHDRAW) && sender.hasPermission("coins.withdraw"))
             sender.sendMessage(Messages.WITHDRAW_USAGE.toString());
     }
 }
