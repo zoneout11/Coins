@@ -11,7 +11,7 @@ currencySymbol: "$"
 # You aren't really going to notice this, but in hoppers you can see its name.
 # See a list of all color codes here: http://minecraft.gamepedia.com/Formatting_codes
 # 'multiSuffix's parameter will be added behind 'nameOfCoin' in case it's more than one coin.
-nameOfCoin: "&6Coin"
+nameOfCoin: "scoin"
 multiSuffix: "s"
 
 # What item will the dropped 'coin' (material) be? Find all materials at:
@@ -46,19 +46,19 @@ dropWithAnyDeath: false
 # However, if 'dropEachCoin' is set to true, killed mobs will drop 'from' to 'to' coins,
 # with each coin being worth $1. So by default it will drop 3 to 7 coins when 'dropEachCoin' is true.
 moneyAmount:
-  from: 3.0
-  to: 7.0
+  from: 2.0
+  to: 3.0
 
 # How many decimals should money have? Set to 0 for integers/rounded money (i.e. $3 $6 $8).
 # Value 1 (default) means i.e. $2.3 $5.8 $8.0, value of 2 means i.e. $5.23, $3.70, $6.99, etc.
 # This setting will be ignored (and set to 0) if 'dropEachCoin' is set to true.
-moneyDecimals: 2
+moneyDecimals: 0
 
 # Should coins be stacked? (Or should a coin be one on its own?)
 # Stacked coins don't act like one coin. The stack is counted and the worth is multiplied.
 # Not stacking coins is just for a cooler effect.
 # This setting will be ignored (and set to false) if 'dropEachCoin' is set to true.
-stackCoins: false
+stackCoins: true
 
 # The minimum percentage of damage a player needs to deal to a mob to drop coins.
 # This can be useful for one-hit mob grinders that damage mobs by i.e. fall damage.
@@ -67,7 +67,7 @@ stackCoins: false
 percentagePlayerHit: 0.8
 
 # Disable hoppers to pick up any kind of coins.
-disableHoppers: false
+disableHoppers: true
 
 # Put the amount of coins dropped for a specific mob here, by default: mobs drop one coin.
 # ENDER_DRAGON is added by default, meaning that on kill of Ender Dragon, 64 coins drop.
@@ -76,7 +76,7 @@ disableHoppers: false
 # https://hub.spigotmc.org/javadocs/spigot/org/bukkit/entity/EntityType.html
 mobMultiplier:
   ENDER_DRAGON: 50
-  WITHER: 20
+  WITHER: 500
   PLAYER: 3
 
 # When a player gets killed by another player, should (three; setting above) coins drop?
@@ -94,7 +94,7 @@ spawnerDrop: false
 
 # Should passive mobs also drop a coin?
 # Passive mobs don't drop a coin by default.
-passiveDrop: false
+passiveDrop: true
 
 # Prevent slimes and magma cubes spawned by splits from dropping coins?
 # I've noticed that players can easily get hundreds of coins in slime chunks keeping this 'false'.
@@ -147,7 +147,7 @@ onlyExperienceBlocks: true
 # https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
 blockMultiplier:
   EMERALD_ORE: 2
-  DIAMOND_ORE: 2
+  DIAMOND_ORE: 20
   SPAWNER: 5
 
 # MythicMobs :: In the config of MythicMobs you can define custom coin drops. Use the drop called "COINS"
@@ -162,7 +162,7 @@ loseOnDeath: true
 # If so, how much will be taken? A random integer in between 10 and 30 by default.
 moneyTaken:
   from: 10
-  to: 30
+  to: 50
 
 # Should we take the *amount* of money from them, or the *percentage* of their money?
 # Amount of 10 to 30 would be $10 to $30. Percentage of 10 to 30 would be 10% to 30%.
